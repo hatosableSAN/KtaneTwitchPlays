@@ -5,7 +5,7 @@ using System;
 public class HyperactiveNumsComponentSolver : ReflectionComponentSolver
 {
 	public HyperactiveNumsComponentSolver(TwitchModule module) :
-		base(module, "HyperactiveNumbersScript", "!{0} submit <color> <parity> [Presses submit when the middle number has the specified color and parity]")
+		base(module, "HyperactiveNumbersScript", "!{0} submit <color> <parity> [指定された色と偶奇(偶数=even, 奇数=odd)を持つ中央の数字が表示された時に、送信ボタンを押す。]")
 	{
 	}
 

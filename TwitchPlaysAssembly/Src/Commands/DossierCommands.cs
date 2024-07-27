@@ -3,25 +3,25 @@ using System.Collections;
 using System.Linq;
 using UnityEngine;
 
-/// <summary>Commands that can be used in the dossier menu.</summary>
+/// <summary>メニューバインダー関連のコマンド</summary>
 /// <prefix>dossier </prefix>
 public static class DossierCommands
 {
 	/// <name>Select</name>
 	/// <syntax>select</syntax>
-	/// <summary>Selects the currently highlighted item.</summary>
+	/// <summary>現在選択中のアイテムを選ぶ。</summary>
 	[Command(@"select")]
 	public static IEnumerator Select(FloatingHoldable holdable, string user) => SelectOnPage(holdable, user);
 
 	/// <name>Select Index</name>
 	/// <syntax>select [index]</syntax>
-	/// <summary>Selects an item based on it's index on the menu.</summary>
+	/// <summary>メニュー内の上からindex番目のアイテムを選ぶ。</summary>
 	[Command(@"select +(\d+)")]
 	public static IEnumerator SelectIndex(FloatingHoldable holdable, string user, [Group(1)] int index) => SelectOnPage(holdable, user, index: index);
 
 	/// <name>Up / Down</name>
 	/// <syntax>up (amount)\ndown (amount)</syntax>
-	/// <summary>Moves up or down the menu by a number items.</summary>
+	/// <summary>特定の回数バインダー内を上下に移動する。</summary>
 	[Command(@"(up|u|down|d)(?: (\d+))?")]
 	public static IEnumerator Navigate([Group(1)] string direction, [Group(2)] int? optAmount)
 	{
@@ -70,8 +70,8 @@ public static class DossierCommands
 		if (TwitchPlaysService.Instance.CurrentState != KMGameInfo.State.Gameplay)
 			yield break;
 
-		// If the dossier page changes while we're holding the menu, we need to reinitialize the menu.
-		// Dossier Modifier can do this.
+		// メニューを表示中にバインダーのページが変更された場合、初期化する。
+		// Dossier Modifierが行ってくれる。
 		InitializePage(holdable);
 
 		if (index > 0)
@@ -112,11 +112,11 @@ public static class DossierCommands
 		_currentSelectable.HandleSelect(true);
 		KTInputManager.Instance.SelectableManager.Select(_currentSelectable, true);
 
-		// Prevent users from trying to select anything that is not the dossier modifier button
+		// ユーザーがDossier Modifier上のボタン以外のものを選択しようとしないようにする
 		if (!_currentSelectable.name.StartsWith("SolveDossierModifier"))
 		{
 			Audio.PlaySound(KMSoundOverride.SoundEffect.Strike, _currentSelectable.transform);
-			IRCConnection.SendMessage("This option is not accessable to Twitch Plays users.");
+			IRCConnection.SendMessage("このオプションはTPユーザーでは操作できません。");
 			yield break;
 		}
 

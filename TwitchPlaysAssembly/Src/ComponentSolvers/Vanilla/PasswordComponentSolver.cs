@@ -11,7 +11,9 @@ public class PasswordComponentSolver : ComponentSolver
 		var passwordModule = (PasswordComponent) module.BombComponent;
 		_spinners = passwordModule.Spinners;
 		_submitButton = passwordModule.SubmitButton;
-		ModInfo = ComponentSolverFactory.GetModuleInfo("Password", "!{0} cycle 1 3 5 [cycle through the letters in columns 1, 3, and 5] | !{0} cycle [cycle through all columns] | !{0} toggle [move all columns down one letter] | !{0} world [try to submit a word]");
+		ModInfo = ComponentSolverFactory.GetModuleInfo("Password", "!{0} cycle 1 3 5 [列1、3、5の文字をそれぞれ順番に見る] | !{0} toggle [すべての列を1回ずつ下に移動する] | !{0} world [単語worldを送信する]");
+		ModInfo.moduleTranslatedName = "パスワード";
+		ModInfo.manualCode = "https://ktane.timwi.de/HTML/Password%20translated%20(%E6%97%A5%E6%9C%AC%E8%AA%9E%20%E2%80%94%20%E3%83%91%E3%82%B9%E3%83%AF%E3%83%BC%E3%83%89).html";
 	}
 
 	protected internal override IEnumerator RespondToCommandInternal(string inputCommand)
@@ -24,7 +26,7 @@ public class PasswordComponentSolver : ComponentSolver
 			for (int i = 0; i < 5; i++)
 				yield return DoInteractionClick(_spinners[i].DownButton);
 		}
-		else if (Regex.IsMatch(inputCommand, @"^\s*cycle\s*$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+		/* else if (Regex.IsMatch(inputCommand, @"^\s*cycle\s*$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
 		{
 			yield return "password";
 			for (int i = 0; i < 5; i++)
@@ -33,7 +35,7 @@ public class PasswordComponentSolver : ComponentSolver
 				while (spinnerCoroutine.MoveNext())
 					yield return spinnerCoroutine.Current;
 			}
-		}
+		} */
 		else if ((m = Regex.Match(inputCommand, @"^\s*cycle\s+([ \d]+)\s*$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)).Success)
 		{
 			var slots = new HashSet<int>();

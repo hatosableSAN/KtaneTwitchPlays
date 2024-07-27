@@ -11,7 +11,9 @@ public class MorseCodeComponentSolver : ComponentSolver
 		_upButton = morseModule.UpButton;
 		_downButton = morseModule.DownButton;
 		_transmitButton = morseModule.TransmitButton;
-		ModInfo = ComponentSolverFactory.GetModuleInfo("Morse", "!{0} transmit 3.573, !{0} trans 573, !{0} transmit 3.573 MHz, !{0} tx 573 [transmit frequency 3.573]");
+		ModInfo = ComponentSolverFactory.GetModuleInfo("Morse", "!{0} transmit 3.573, !{0} trans 573, !{0} transmit 3.573 MHz, !{0} tx 573 [周波数3.573で送信する]");
+		ModInfo.moduleTranslatedName = "モールス信号";
+		ModInfo.manualCode = "https://ktane.timwi.de/HTML/Morse%20Code%20translated%20(%E6%97%A5%E6%9C%AC%E8%AA%9E%20%E2%80%94%20%E3%83%A2%E3%83%BC%E3%83%AB%E3%82%B9%E4%BF%A1%E5%8F%B7).html";
 	}
 
 	protected internal override IEnumerator RespondToCommandInternal(string inputCommand)

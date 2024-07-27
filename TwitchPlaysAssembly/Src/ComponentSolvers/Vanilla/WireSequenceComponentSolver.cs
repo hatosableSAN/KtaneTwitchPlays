@@ -15,7 +15,9 @@ public class WireSequenceComponentSolver : ComponentSolver
 		_wireSequence = (List<WireSequenceComponent.WireConfiguration>) WireSequenceField.GetValue(wireSeqModule);
 		_upButton = wireSeqModule.UpButton;
 		_downButton = wireSeqModule.DownButton;
-		ModInfo = ComponentSolverFactory.GetModuleInfo("WireSequence", "!{0} cut 7 [cut wire 7] | !{0} down, !{0} d [next stage] | !{0} up, !{0} u [previous stage] | !{0} cut 7 8 9 d [cut multiple wires and continue] | Use the numbers shown on the module");
+		ModInfo = ComponentSolverFactory.GetModuleInfo("WireSequence", "!{0} cut 7 [ワイヤ7を切る] | !{0} down, !{0} d [次のパネルに移動] | !{0} up, !{0} u [前のパネルに移動] | !{0} cut 7 8 9 d [複数のワイヤを切って次のパネルに移動] | 数字はモジュール左側の数字を利用する");
+		ModInfo.moduleTranslatedName = "順番ワイヤ";
+		ModInfo.manualCode = "https://ktane.timwi.de/HTML/Wire%20Sequence%20translated%20(%E6%97%A5%E6%9C%AC%E8%AA%9E%20%E2%80%94%20%E9%A0%86%E7%95%AA%E3%83%AF%E3%82%A4%E3%83%A4).html";
 	}
 
 	protected internal override IEnumerator RespondToCommandInternal(string inputCommand)

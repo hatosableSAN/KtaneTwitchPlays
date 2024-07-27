@@ -10,8 +10,11 @@ public class ButtonComponentSolver : ComponentSolver
 	public ButtonComponentSolver(TwitchModule module) :
 		base(module)
 	{
-		ModuleInformation buttonInfo = ComponentSolverFactory.GetModuleInfo("BigButton", "!{0} tap [tap the button] | !{0} hold [hold the button] | !{0} release 7 [release when the digit shows 7]");
-		ModuleInformation buttonInfoModified = ComponentSolverFactory.GetModuleInfo("BigButtonModified", "Click the button with !{0} tap. Click the button at a time with !{0} tap 8:55 8:44 8:33. Hold the button with !{0} hold. Release the button with !{0} release 9:58 9:49 9:30.");
+		ModuleInformation buttonInfo = ComponentSolverFactory.GetModuleInfo("BigButton", "!{0} tap [ボタンを押してすぐに離す] | !{0} hold [ボタンを長押しする] | !{0} release 7 [7が表示されている時にボタンを離す]");
+		ModuleInformation buttonInfoModified = ComponentSolverFactory.GetModuleInfo("BigButtonModified", "!{0} tap [ボタンを押してすぐに離す] | !{0} tap 8:55 8:44 8:33 [特定のタイミングでボタンを押してすぐに離す] | !{0} hold [ボタンを長押しする] | !{0} release 9:58 9:49 9:30 !{0} hold [特定のタイミングでボタンを離す] ");
+
+		buttonInfo.moduleTranslatedName = "ボタン";
+		buttonInfo.manualCode = "https://ktane.timwi.de/HTML/The%20Button%20translated%20(%E6%97%A5%E6%9C%AC%E8%AA%9E%20%E2%80%94%20%E3%83%9C%E3%82%BF%E3%83%B3).html";
 
 		var buttonModule = (ButtonComponent) module.BombComponent;
 		buttonModule.GetComponent<Selectable>().OnCancel += buttonModule.OnButtonCancel;
@@ -86,7 +89,7 @@ public class ButtonComponentSolver : ComponentSolver
 				_held = false;
 			}
 
-			yield return $"trycancel The button was not {(_held ? "released" : "tapped")} due to a request to cancel.";
+			yield return $"trycancel キャンセルが実行されたので、ボタンは{(_held ? "離" : "押")}されませんでした。";
 		}
 	}
 

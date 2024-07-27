@@ -5,7 +5,7 @@ using System.Linq;
 using Assets.Scripts.Props;
 using UnityEngine;
 
-/// <summary>Commands that can be run during a game.</summary>
+/// <summary>ゲーム中のコマンド</summary>
 static class GameCommands
 {
 	public static List<IRCMessage> calledCommands = new List<IRCMessage>();
@@ -13,19 +13,19 @@ static class GameCommands
 	#region Commands during the game
 	/// <name>Cancel</name>
 	/// <syntax>cancel</syntax>
-	/// <summary>Cancels the current running command.</summary>
+	/// <summary>現在実行中のコマンドをキャンセルする。</summary>
 	[Command(@"cancel")]
 	public static void Cancel() => CoroutineCanceller.SetCancel();
 
 	/// <name>Stop</name>
 	/// <syntax>stop</syntax>
-	/// <summary>Stops the current and queued commands.</summary>
+	/// <summary>現在のキュー追加済みコマンドを停止する。</summary>
 	[Command(@"stop")]
 	public static void Stop() => TwitchGame.Instance.StopCommands();
 
 	/// <name>Get Notes</name>
 	/// <syntax>notes[note]</syntax>
-	/// <summary>Sends the contents of a note to chat.</summary>
+	/// <summary>メモの内容をチャットに送る。</summary>
 	/// <argument name="note">The note's number.</argument>
 	[Command(@"notes(-?\d+)")]
 	public static void ShowNotes([Group(1)] int index, string user, bool isWhisper) =>
@@ -33,7 +33,7 @@ static class GameCommands
 
 	/// <name>Set Notes</name>
 	/// <syntax>notes[note] [contents]</syntax>
-	/// <summary>Sets the contents of a note.</summary>
+	/// <summary>メモを記入する。</summary>
 	/// <argument name="note">The note's number.</argument>
 	/// <argument name="contents">New text of the note.</argument>
 	[Command(@"notes(-?\d+) +(.+)")]
@@ -47,7 +47,7 @@ static class GameCommands
 
 	/// <name>Append Notes</name>
 	/// <syntax>notes[note]append [contents]</syntax>
-	/// <summary>Appends the contents of a note.</summary>
+	/// <summary>メモの末尾に追加する。</summary>
 	/// <argument name="note">The note's number.</argument>
 	/// <argument name="contents">The text that will be appended to the note.</argument>
 	[Command(@"notes(-?\d+)append +(.+)")]
@@ -64,7 +64,7 @@ static class GameCommands
 
 	/// <name>Clear Notes</name>
 	/// <syntax>notes[note]clear</syntax>
-	/// <summary>Clears the contents of a note.</summary>
+	/// <summary>メモの中身を削除する。</summary>
 	/// <argument name="note">The note's number.</argument>
 	[Command(@"(?:notes(-?\d+)clear|clearnotes(-?\d+))")]
 	public static void SetNotesClear([Group(1)] int index, string user, bool isWhisper)
@@ -78,7 +78,7 @@ static class GameCommands
 
 	/// <name>Snooze</name>
 	/// <syntax>snooze</syntax>
-	/// <summary>Snoozes the alarm clock.</summary>
+	/// <summary>アラームを一時停止する。</summary>
 	[Command(@"snooze")]
 	public static IEnumerator Snooze()
 	{
@@ -98,36 +98,36 @@ static class GameCommands
 
 	/// <name>Show Claims</name>
 	/// <syntax>claims [user]</syntax>
-	/// <summary>Shows the claims of another user.</summary>
+	/// <summary>あるユーザーのモジュール割り当てを見る。</summary>
 	/// <argument name="user">The user whose claims you want to see.</argument>
 	[Command(@"claims +(.+)")]
 	public static void ShowClaimsOfAnotherPlayer([Group(1)] string targetUser, string user, bool isWhisper)
 	{
 		if (TwitchPlaySettings.data.AnarchyMode)
-			IRCConnection.SendMessage($"Sorry {user}, claiming modules is not available in anarchy mode.", user, !isWhisper);
+			IRCConnection.SendMessage($"@{user}さん：モジュールの割り当てはアナーキーモードでは無効化されています。", user, !isWhisper);
 		else if (isWhisper && TwitchPlaySettings.data.EnableWhispers)
-			IRCConnection.SendMessage("Checking other people's claims in whispers is not supported.", user, false);
+			IRCConnection.SendMessage("ウィスパーコメントでは、他人の割り当てを確認することはできません。", user, false);
 		else
 			ShowClaimsOfUser(targetUser, isWhisper, TwitchPlaySettings.data.OwnedModuleListOther, TwitchPlaySettings.data.NoOwnedModulesOther);
 	}
 
 	/// <name>Claims</name>
 	/// <syntax>claims</syntax>
-	/// <summary>Shows all of your claims.</summary>
+	/// <summary>自分のモジュール割り当てを見る。</summary>
 	[Command(@"claims")]
 	public static void ShowClaims(string user, bool isWhisper)
 	{
 		if (TwitchPlaySettings.data.AnarchyMode)
-			IRCConnection.SendMessage($"Sorry {user}, claiming modules is not available in anarchy mode.", user, !isWhisper);
+			IRCConnection.SendMessage($"@{user}さん：モジュールの割り当てはアナーキーモードでは無効化されています。", user, !isWhisper);
 		else
 			ShowClaimsOfUser(user, isWhisper, TwitchPlaySettings.data.OwnedModuleList, TwitchPlaySettings.data.NoOwnedModules);
 	}
 
 	/// <name>Claim View Pin</name>
 	/// <syntax>claim (what)\nview (what)\npin (what)\n(actions) (what)</syntax>
-	/// <summary>Claims, views or pins a list of module codes. (actions) should be some combination of claim, view or pin seperated by spaces.</summary>
+	/// <summary>モジュールをまとめて割り当て、表示、ピン留めする。(actions) は、claim, view、pin のいずれかをスペースで分けて入力する。</summary>
 	/// <argument name="actions">A combination of claim, view or pin seperated by spaces.</argument>
-	/// <argument name="what">A list of module codes to take the actions on. Can be "all" to do the action on all unsolved modules.</argument>
+	/// <argument name="what">アクションを実行するモジュールコードのリスト。すべての未解除モジュールに対してアクションを実行するには、「all」を指定する。</argument>
 	[Command(@"((?:claim *|view *|pin *)+)(?: +(.+)| *(all))")]
 	public static void ClaimViewPin(string user, bool isWhisper, [Group(1)] string command, [Group(2)] string claimWhat, [Group(3)] bool all)
 	{
@@ -139,7 +139,7 @@ static class GameCommands
 
 		if (modules == null || modules.Length == 0)
 		{
-			IRCConnection.SendMessage($"@{user}, no such module.", user, !isWhisper);
+			IRCConnection.SendMessage($"@{user}さん：そのようなモジュールはありません。", user, !isWhisper);
 			return;
 		}
 		ClaimViewPin(user, isWhisper, modules, command.Contains("claim"), command.Contains("view"), command.Contains("pin"));
@@ -147,7 +147,7 @@ static class GameCommands
 
 	/// <name>Claim Any</name>
 	/// <syntax>claim [source]\nclaim [source] view</syntax>
-	/// <summary>Claims one unsolved and unclaimed module from a source. any, van or mod are acceptable sources.</summary>
+	/// <summary>未解除かつ未割り当てのモジュールをランダムに割り当てる。</summary>
 	/// <argument name="source">The source of the modules to pick from. any for any module, van for vanilla and mod for modded modules.</argument>
 	[Command(@"(?:claim *(any|van|mod) *(view)?|(view) *claim *(any|van|mod))")]
 	public static void ClaimAny([Group(1)] string claimWhat1, [Group(4)] string claimWhat2, [Group(2)] bool view1, [Group(3)] bool view2, string user, bool isWhisper)
@@ -167,12 +167,12 @@ static class GameCommands
 		if (unclaimed != null)
 			ClaimViewPin(user, isWhisper, new[] { unclaimed }, claim: true, view: view);
 		else
-			IRCConnection.SendMessage($"There are no more unclaimed{(vanilla ? " vanilla" : modded ? " modded" : null)} modules.");
+			IRCConnection.SendMessage($"割り当てられていない{(vanilla ? "バニラ" : modded ? "MOD" : null)}モジュールはありません。");
 	}
 
 	/// <name>Unclaim All</name>
 	/// <syntax>unclaim all\nunclaim queued</syntax>
-	/// <summary>Unclaims all modules you have claimed and queued claims. If queued is used instead of all, then only queued claims will be removed.</summary>
+	/// <summary>割り当て済み/割り当てのキュー追加済みであるモジュールの割り当てを全解除する。unclaim queuedの場合、割り当てのキュー追加済みであるモジュールのみを解除する。</summary>
 	[Command(@"(?:unclaim|release) *(?:all|(q(?:ueued?)?))")]
 	public static void UnclaimAll(string user, [Group(1)] bool queuedOnly)
 	{
@@ -187,7 +187,7 @@ static class GameCommands
 
 	/// <name>Unclaim Specific</name>
 	/// <syntax>unclaim [what]</syntax>
-	/// <summary>Unclaims a list of module codes.</summary>
+	/// <summary>モジュールの割り当てをまとめて解除する。</summary>
 	/// <argument name="what">A list of module codes to unclaim.</argument>
 	[Command(@"(?:unclaim|release) +(.+)")]
 	public static void UnclaimSpecific([Group(1)] string unclaimWhat, string user, bool isWhisper)
@@ -196,7 +196,7 @@ static class GameCommands
 		var modules = strings.Length == 0 ? null : TwitchGame.Instance.Modules.Where(md => !md.Solved && !md.Hidden && md.PlayerName == user && strings.Any(str => str.EqualsIgnoreCase(md.Code))).ToArray();
 		if (modules == null || modules.Length == 0)
 		{
-			IRCConnection.SendMessage($"@{user}, no such module.", user, !isWhisper);
+			IRCConnection.SendMessage($"@{user}さん：そのようなモジュールはありません。", user, !isWhisper);
 			return;
 		}
 
@@ -208,7 +208,7 @@ static class GameCommands
 	public static int unclaimedModuleIndex;
 	/// <name>Unclaimed</name>
 	/// <syntax>unclaimed</syntax>
-	/// <summary>Sends a maximum of 3 unclaimed modules to chat.</summary>
+	/// <summary>未割り当てのモジュールを最大3つ表示する。</summary>
 	[Command(@"unclaimed")]
 	public static void ListUnclaimed(string user, bool isWhisper)
 	{
@@ -259,7 +259,7 @@ static class GameCommands
 			unclaimedModuleIndex++;
 			checkAndWrap();
 
-			string moduleString = string.Format($"{handle.HeaderText} ({handle.Code})");
+			string moduleString = string.Format($"{handle.TranslatedName} ({handle.HeaderText}, {handle.Code})");
 			// If we hit a duplicate because we were at the end of the list and we wrapped so we'll skip over it and get another item.
 			if (unclaimed.Contains(moduleString))
 			{
@@ -278,34 +278,34 @@ static class GameCommands
 			return;
 		}
 
-		IRCConnection.SendMessage($"Unclaimed Modules: {unclaimed.Join(", ")}");
+		IRCConnection.SendMessage($"未割り当てのモジュール: {unclaimed.Join(", ")}");
 	}
 
 	/// <name>Unsolved</name>
 	/// <syntax>unsolved</syntax>
-	/// <summary>Sends a maximum of 3 unsolved modules to chat.</summary>
+	/// <summary>未解除のモジュールを最大3つ表示する。</summary>
 	[Command(@"unsolved")]
 	public static void ListUnsolved(string user, bool isWhisper)
 	{
 		if (TwitchGame.Instance.Bombs.All(b => b.IsSolved))
 		{
 			// If the command is issued while the winning fanfare is playing.
-			IRCConnection.SendMessage("All bombs already solved!", user, !isWhisper);
+			IRCConnection.SendMessage("爆弾は既に解除されました!", user, !isWhisper);
 			return;
 		}
 
 		IEnumerable<string> unsolved = TwitchGame.Instance.Modules
 			.Where(module => !module.Solved && GameRoom.Instance.IsCurrentBomb(module.BombID) && !module.Hidden)
 			.Shuffle().Take(3)
-			.Select(module => $"{module.HeaderText} ({module.Code}) - {(module.PlayerName == null ? "Unclaimed" : "Claimed by " + module.PlayerName)}")
+			.Select(module => $"{module.TranslatedName} ({module.HeaderText}, {module.Code}) - {(module.PlayerName == null ? "割り当てなし" : $"{module.PlayerName}に割り当て")}")
 			.ToList();
 
-		IRCConnection.SendMessage(unsolved.Any() ? $"Unsolved Modules: {unsolved.Join(", ")}" : "There are no unsolved modules on this bomb that aren't hidden.", user, !isWhisper);
+		IRCConnection.SendMessage(unsolved.Any() ? $"未解除のモジュール: {unsolved.Join(", ")}" : "現在未解除で公開されているモジュールはありません。", user, !isWhisper);
 	}
 
 	/// <name>Find Claim View</name>
 	/// <syntax>find (actions) [what]</syntax>
-	/// <summary>Finds modules based on their module name. [what] can be partial module names seperated by commas or semicolons. If (actions) are specified, they will be executed on the matching modules.</summary>
+	/// <summary>モジュール名(英名)に基づいてモジュールを検索する。カンマ、セミコロンで分割して複数検索(OR検索)も可能である。findの後に行動を入れて、一致したモジュールに対してアクションを行うことも出来る。</summary>
 	/// <argument name="actions">A combination of claim or view seperated by spaces.</argument>
 	/// <argument name="what">Partial module names seperated by commas or semicolons.</argument>
 	[Command(@"(?:find|search)((?: *claim| *view)*) +(.+)")]
@@ -317,14 +317,14 @@ static class GameCommands
 		var terms = queries.SplitFull(',', ';').Select(q => q.Trim()).Distinct().ToArray();
 		if (terms.Length > TwitchPlaySettings.data.FindClaimTerms && claim && TwitchPlaySettings.data.FindClaimTerms != -1)
 		{
-			IRCConnection.SendMessageFormat("@{0}, please reduce the size of your list to {1} or fewer terms.", user, TwitchPlaySettings.data.FindClaimTerms); // Prevents lists greater than length of 3 while using !claim
+			IRCConnection.SendMessageFormat("@{0}さん：検索の単語リストの大きさを{1}以下にしてください。", user, TwitchPlaySettings.data.FindClaimTerms); // Prevents lists greater than length of 3 while using !claim
 			return;
 		}
 
 		var modules = FindModules(terms).ToList();
 		if (modules.Count == 0)
 		{
-			IRCConnection.SendMessage("No such modules.", user, !isWhisper);
+			IRCConnection.SendMessage("そのようなモジュールはありません。", user, !isWhisper);
 			return;
 		}
 
@@ -332,7 +332,7 @@ static class GameCommands
 		{
 			if (!TwitchGame.Instance.FindClaimEnabled && !OtherModes.TrainingModeOn)
 			{
-				IRCConnection.SendMessageFormat("@{0}, the findclaim command may only be used after {1} seconds have passed.", user, TwitchPlaySettings.data.FindClaimDelay); // Prevents findclaim spam at the start of a bomb
+				IRCConnection.SendMessageFormat("@{0}さん：findclaimコマンドは爆弾開始から{1}秒間は利用できません。", user, TwitchPlaySettings.data.FindClaimDelay); // Prevents findclaim spam at the start of a bomb
 				return;
 			}
 			if (!TwitchGame.Instance.FindClaimPlayers.ContainsKey(user)) TwitchGame.Instance.FindClaimPlayers.Add(user, 0);
@@ -343,13 +343,13 @@ static class GameCommands
 
 			if (_remainingClaims < 1 && TwitchPlaySettings.data.FindClaimLimit != -1)
 			{
-				IRCConnection.SendMessageFormat("@{0}, you have no more findclaim uses.", user);
+				IRCConnection.SendMessageFormat("@{0}さん：findclaimの上限に達しました。", user);
 				return;
 			}
 
 			if (modules.Count > _remainingClaims && TwitchPlaySettings.data.FindClaimLimit != -1)
 			{
-				IRCConnection.SendMessageFormat("@{0}, that goes over your current findclaim limit of {1}. You will receive the first {2} claims.", user, _allowedClaims, _remainingClaims);
+				IRCConnection.SendMessageFormat("@{0}さん：findclaimの上限である{1}に達しました。最初の{2}つの割り当てのみ行います。", user, _allowedClaims, _remainingClaims);
 				ClaimViewPin(user, isWhisper, modules.Take(_remainingClaims), claim: claim, view: view);
 			}
 			else ClaimViewPin(user, isWhisper, modules, claim: claim, view: view);
@@ -359,41 +359,42 @@ static class GameCommands
 		else if (view) ClaimViewPin(user, isWhisper, modules, claim: claim, view: view);
 		else
 			// Neither claim nor view: just “find”, so output top 3 search results
-			IRCConnection.SendMessage("{0}, modules ({2} total) are: {1}", user, !isWhisper, user,
+			IRCConnection.SendMessage("{0}さん：{2}個のモジュールが該当しました：{1}", user, !isWhisper, user,
 				modules.Take(3).Select(handle =>
-					$"{handle.HeaderText} ({handle.Code}) - {(handle.Solved ? "solved" : handle.PlayerName == null ? "unclaimed" : "claimed by " + handle.PlayerName)}").Join(", "),
+					$"{handle.HeaderText} ({handle.Code}) - {(handle.Solved ? "解除済み" : handle.PlayerName == null ? "未割り当て" : handle.PlayerName+"に割り当て済")}").Join(", "),
 				modules.Count);
+    IRCConnection.SendMessage("和名を調べるには、「!x help」コマンドを使用してください。");
 	}
 
 	/// <name>Find Player</name>
 	/// <syntax>findplayer [what]</syntax>
-	/// <summary>Finds claimed modules based on their module name and shows who has the claim on the module. [what] can be partial module names seperated by commas or semicolons.</summary>
+	/// <summary>そのモジュールを割り当てられている人を検索する。[what]には、カンマやセミコロンで区切ってモジュール名(部分検索OK)を指定できる。</summary>
 	/// <argument name="what">A combination of claim or view seperated by spaces.</argument>
 	[Command(@"(?:find *player|player *find|search *player|player *search) +(.+)", AccessLevel.User, /* Disabled in Anarchy mode */ AccessLevel.Streamer)]
 	public static void FindPlayer([Group(1)] string queries, string user, bool isWhisper)
 	{
 		List<string> modules = FindModules(queries.SplitFull(',', ';').Select(q => q.Trim()).Distinct().ToArray(), m => m.PlayerName != null)
-			.Select(module => $"{module.HeaderText} ({module.Code}) - claimed by {module.PlayerName}")
+			.Select(module => $"{module.TranslatedName} ({module.HeaderText}, {module.Code})：{module.PlayerName}に割り当て")
 			.ToList();
-		IRCConnection.SendMessage(modules.Count > 0 ? $"Modules: {modules.Join(", ")}" : "No such claimed/solved modules.", user, !isWhisper);
+		IRCConnection.SendMessage(modules.Count > 0 ? $"モジュール： {modules.Join(", ")}" : "そのような解除された/割り当てられたモジュールは存在しません。", user, !isWhisper);
 	}
 
 	/// <name>Find Solved</name>
 	/// <syntax>findsolved [what]</syntax>
-	/// <summary>Finds solved modules based on their module name and shows who has the claim on the module. [what] can be partial module names seperated by commas or semicolons.</summary>
+	/// <summary>そのモジュール解除した人を検索する。[what]には、カンマやセミコロンで区切ってモジュール名(部分検索OK)を指定できる。</summary>
 	/// <argument name="what">A combination of claim or view seperated by spaces.</argument>
 	[Command(@"(?:find *solved|solved *find|search *solved|solved *search) +(.+)", AccessLevel.User, /* Disabled in Anarchy mode */ AccessLevel.Streamer)]
 	public static void FindSolved([Group(1)] string queries, string user, bool isWhisper)
 	{
 		List<string> modules = FindModules(queries.SplitFull(',', ';').Select(q => q.Trim()).Distinct().ToArray(), m => m.Solved)
-			.Select(module => $"{module.HeaderText} ({module.Code}) - claimed by {module.PlayerName}")
+			.Select(module => $"{module.HeaderText} ({module.Code})：{module.PlayerName}さんに割り当て済み")
 			.ToList();
-		IRCConnection.SendMessage(modules.Count > 0 ? $"Modules: {modules.Join(", ")}" : "No such solved modules.", user, !isWhisper);
+		IRCConnection.SendMessage(modules.Count > 0 ? $"モジュール: {modules.Join(", ")}" : "そのようなモジュールはありません。", user, !isWhisper);
 	}
 
 	/// <name>Find Duplicate</name>
 	/// <syntax>findduplicate (what)</syntax>
-	/// <summary>Finds duplicate modules based on their module name. (what) can be partial module names seperated by commas or semicolons. If not specified, all modules will be searched.</summary>
+	/// <summary>重複しているモジュールを検索する。[what]には、カンマやセミコロンで区切ってモジュール名(部分検索OK)を指定できる。指定がない場合、すべてのモジュールから検索する。</summary>
 	/// <argument name="what">A combination of claim or view seperated by spaces.</argument>
 	[Command(@"(?:find *dup(?:licate)?|dup(?:licate)? *find|search *dup(?:licate)?|dup(?:licate)? *search)( +.+)?")]
 	public static void FindDuplicate([Group(1)] string queries, string user, bool isWhisper)
@@ -405,29 +406,29 @@ static class GameCommands
 
 		var modules = allMatches.Shuffle().Take(3).ToList();
 
-		IRCConnection.SendMessage(modules.Count > 0 ? $"Duplicates ({allMatches.Count()} total): {modules.Join(", ")}" : "No such duplicate modules.", user, !isWhisper);
+		IRCConnection.SendMessage(modules.Count > 0 ? $"重複モジュールが{allMatches.Count()}個見つかりました: {modules.Join(", ")}" : "重複モジュールはありません。", user, !isWhisper);
 	}
 
 	/// <name>New Bomb</name>
 	/// <syntax>newbomb</syntax>
-	/// <summary>Starts a new bomb in training mode. Requires either a minimum score or the defuser rank to run.</summary>
+	/// <summary>トレーニングモードで新しい爆弾を開始する。実行には一定ポイントの獲得または「処理担当者」以上の権限が必要である。</summary>
 	[Command(@"newbomb")]
 	public static void NewBomb(string user, bool isWhisper)
 	{
 		if (!OtherModes.TrainingModeOn)
 		{
-			IRCConnection.SendMessage($"{user}, the newbomb command is only allowed in Training mode.", user, !isWhisper);
+			IRCConnection.SendMessage($"@{user}さん：newbombコマンドはトレーニングモードでのみ有効です。", user, !isWhisper);
 			return;
 		}
 		if (isWhisper)
 		{
-			IRCConnection.SendMessage($"{user}, the newbomb command is not allowed in whispers.", user, !isWhisper);
+			IRCConnection.SendMessage($"@{user}さん：newbombコマンドはウィスパーコメントでは実行できません。", user, !isWhisper);
 			return;
 		}
 
 		Leaderboard.Instance.GetRank(user, out var entry);
 		if (entry == null || entry.SolveScore < TwitchPlaySettings.data.MinScoreForNewbomb && !UserAccess.HasAccess(user, AccessLevel.Defuser, true))
-			IRCConnection.SendMessage($"{user}, you don’t have enough points to use the newbomb command.");
+			IRCConnection.SendMessage($"@{user}さん：newbombコマンドをするための十分なポイントがありません。");
 		else
 		{
 			TwitchPlaySettings.AddRewardBonus(-TwitchPlaySettings.GetRewardBonus());
@@ -437,7 +438,7 @@ static class GameCommands
 
 	/// <name>Fill Edgework</name>
 	/// <syntax>filledgework</syntax>
-	/// <summary>Fills in the text-based edgework. Requires either mod rank or it to be enabled for everyone.</summary>
+	/// <summary>テキストベースでエッジワークを表示する。モデレーター権限以上かTwitchplaySettingsにて全員に許可する必要がある。</summary>
 	[Command(@"filledgework")]
 	public static void FillEdgework(string user, bool isWhisper)
 	{
@@ -454,13 +455,13 @@ static class GameCommands
 
 	/// <name>Elevator Edgework</name>
 	/// <syntax>edgework (wall)</syntax>
-	/// <summary>Shows the edgework on the elevator. (wall) is which wall of the elevator to show, ex: right, left or back.</summary>
+	/// <summary>エレベーター上にあるエッジワークを表示する。(wall)は表示したい壁の面を指定する。例：right, left, back</summary>
 	/// <restriction>ElevatorOnly</restriction>
 	[Command(@"edgework((?: right| left| back| r| l| b)?)"), ElevatorOnly]
 	public static IEnumerator EdgeworkElevator([Group(1)] string edge, string user, bool isWhisper) => Edgework(edge, user, isWhisper);
 	/// <name>Edgework</name>
 	/// <syntax>edgework (edge)\nedgework 45</syntax>
-	/// <summary>Rotates the bomb to show the edgework. (edge) is which edge of the bomb will be shown, ex: top or top left. Using 45 will rotate the bomb in 45 degree increments.</summary>
+	/// <summary>エッジワークを見るために爆弾を回転させる。(edge)は表示したい壁の面を指定する。例：top, top left。45度回転させる場合は、45と入力する。</summary>
 	/// <restriction>ElevatorDisallowed</restriction>
 	[Command(@"edgework((?: 45|-45)|(?: top right| right top| right bottom| bottom right| bottom left| left bottom| left top| top left| left| top| right| bottom| tr| rt| tl| lt| br| rb| bl| lb| t| r| b| l))?"), ElevatorDisallowed]
 	public static IEnumerator Edgework([Group(1)] string edge, string user, bool isWhisper)
@@ -480,14 +481,14 @@ static class GameCommands
 
 	/// <name>Camera Wall</name>
 	/// <syntax>camerawall [mode]</syntax>
-	/// <summary>Sets the mode of the camera wall to either on, off or auto. If automatic camera wall is enabled, mod rank is required to use.</summary>
+	/// <summary>カメラウォールのモードをオン、オフ、自動のいずれかに設定する。自動カメラウォールが有効な場合、使用するにはMODランクが必要。</summary>
 	/// <argument name="mode">The mode of the camera wall. Can be on, off or auto.</argument>
 	[Command(@"(?:camerawall|cw) *(on|enabled?|off|disabled?|auto)")]
 	public static void CameraWall(string user, [Group(1)] string mode)
 	{
 		if (TwitchPlaySettings.data.EnableAutomaticCameraWall && !UserAccess.HasAccess(user, AccessLevel.Mod, true))
 		{
-			IRCConnection.SendMessage("The camera wall is being controlled automatically and can only be changed by mods.");
+			IRCConnection.SendMessage("カメラの面は自動的に制御されます。モデレーターのみ変更できます。");
 			return;
 		}
 
@@ -501,55 +502,55 @@ static class GameCommands
 
 	/// <name>Queue Named Command</name>
 	/// <syntax>queue [name] [command]</syntax>
-	/// <summary>Queues a command that can be called by name.</summary>
+	/// <summary>名前付きのコマンドをキューに追加する。</summary>
 	[Command(@"q(?:ueue)? +(?!\s*!)([^!]+) +(!.+)")]
 	public static void EnqueueNamedCommand(IRCMessage msg, [Group(1)] string name, [Group(2)] string command)
 	{
 		if (name.Trim().EqualsIgnoreCase("all"))
 		{
-			IRCConnection.SendMessage(@"@{0}, you can’t use “all” as a name for queued commands.", msg.UserNickName, !msg.IsWhisper, msg.UserNickName);
+			IRCConnection.SendMessage(@"@{0}さん：キューに追加するコマンドの名前にallを利用することはできません。", msg.UserNickName, !msg.IsWhisper, msg.UserNickName);
 			return;
 		}
 		TwitchGame.Instance.CommandQueue.Add(new CommandQueueItem(msg.Duplicate(command), name.Trim()));
 		TwitchGame.ModuleCameras?.SetNotes();
-		IRCConnection.SendMessage("@{0}, command queued.", msg.UserNickName, !msg.IsWhisper, msg.UserNickName);
+		IRCConnection.SendMessage("@{0}さん：コマンドがキューされました。", msg.UserNickName, !msg.IsWhisper, msg.UserNickName);
 		TwitchGame.Instance.CallUpdate(false);
 	}
 
 	/// <name>Queue Command</name>
 	/// <syntax>queue [command]</syntax>
-	/// <summary>Queues a command that will be called in order.</summary>
+	/// <summary>順番に呼び出したいコマンドをキューに追加する。</summary>
 	[Command(@"q(?:ueue)? +(!.+)")]
 	public static void EnqueueUnnamedCommand(IRCMessage msg, [Group(1)] string command)
 	{
 		var simplifiedCommand = command.Trim().ToLowerInvariant();
 		if (!UserAccess.HasAccess(msg.UserNickName, AccessLevel.Admin, true) && (simplifiedCommand.StartsWith("!q") || simplifiedCommand.StartsWith("!bomb")))
 		{
-			IRCConnection.SendMessage("@{0}, you cannot queue that command.", msg.UserNickName, !msg.IsWhisper, msg.UserNickName);
+			IRCConnection.SendMessage("@{0}さん：そのコマンドはキューに追加できません。", msg.UserNickName, !msg.IsWhisper, msg.UserNickName);
 			return;
 		}
 
 		TwitchGame.Instance.CommandQueue.Add(new CommandQueueItem(msg.Duplicate(command)));
 		TwitchGame.ModuleCameras?.SetNotes();
-		IRCConnection.SendMessage("@{0}, command queued.", msg.UserNickName, !msg.IsWhisper, msg.UserNickName);
+		IRCConnection.SendMessage("@{0}さん：コマンドがキューに追加されました。", msg.UserNickName, !msg.IsWhisper, msg.UserNickName);
 		TwitchGame.Instance.CallUpdate(false);
 	}
 
 	/// <name>Unqueue/Show Command</name>
 	/// <syntax>unqueue [command]\ndelqueue [command]\nshowqueue [command]</syntax>
-	/// <summary>Unqueues, deletes or shows a queued command. Unqueuing only allows you to remove your own commands. Deleting is a moderator only action that can remove any command.</summary>
+	/// <summary>キューに入っているコマンドを削除、表示する。Unqueueは自分のコマンドだけを削除することができる。delqueueはモデレーターだけの操作であり、どんなコマンドでも削除することができる。</summary>
 	/// <argument name="command">The command to find in the queue. Can be "all" for all of your commands or just all commands if delqueue is being used.</argument>
 	[Command(@"(?:(un)|(del)|(show|list))q(?:ueue)?(?: *(all)| +(.+))?")]
 	public static void UnqueueCommand(string user, bool isWhisper, [Group(1)] bool un, [Group(2)] bool del, [Group(3)] bool show, [Group(4)] bool all, [Group(5)] string command)
 	{
 		if (del && !UserAccess.HasAccess(user, AccessLevel.Mod, true))
 		{
-			IRCConnection.SendMessage($"{user}, you don’t have moderator access.", user, !isWhisper);
+			IRCConnection.SendMessage($"@{user}さん：モデレーター権限が必要です。", user, !isWhisper);
 			return;
 		}
 		if ((del || un) && !all && string.IsNullOrEmpty(command?.Trim()))
 		{
-			IRCConnection.SendMessage($"{user}, specify a command name or use “!{(del ? "del" : "un")}qall”.", user, !isWhisper);
+			IRCConnection.SendMessage($"{user}さん：コマンド名を指定するか!{(del ? "del" : "un")}qallを利用してください。", user, !isWhisper);
 			return;
 		}
 		var matchingItems = all && un
@@ -563,20 +564,24 @@ static class GameCommands
 						: TwitchGame.Instance.CommandQueue.Where(item => (all || del || item.Message.UserNickName == user) && item.Message.UserNickName.EqualsIgnoreCase(command)).ToArray();
 		if (matchingItems.Length == 0)
 		{
-			IRCConnection.SendMessage(@"@{0}, no matching queued commands.", user, !isWhisper, user);
+			IRCConnection.SendMessage(@"@{0}さん：そのようなコマンドはキューにありません。", user, !isWhisper, user);
 			return;
 		}
-		IRCConnection.SendMessage(@"@{0}, {1}: {2}", user, !isWhisper, user, show ? "queue contains" : "removing", matchingItems.Select(item => item.Message.Text + (item.Name != null ? $" ({item.Name})" : null)).Join("; "));
 		if (!show)
 		{
+			IRCConnection.SendMessage($"@{user}さん：次のコマンドをキューから削除します: {matchingItems.Select(item => item.Message.Text + (item.Name != null ? $" ({item.Name})" : null)).Join("; ")}", user, !isWhisper);
 			TwitchGame.Instance.CommandQueue.RemoveAll(item => matchingItems.Contains(item));
 			TwitchGame.ModuleCameras?.SetNotes();
+		} else
+		{
+			IRCConnection.SendMessage($"@{user}さん：次のコマンドがキュー内でマッチしました：{matchingItems.Select(item => item.Message.Text + (item.Name != null ? $" ({item.Name})" : null)).Join("; ")}", user, !isWhisper);
+
 		}
 	}
 
 	/// <name>Queue On/Off</name>
 	/// <syntax>queue on\nqueue off</syntax>
-	/// <summary>Turns the queue on or off, letting other users know that they need to use the queue.</summary>
+	/// <summary>キューをオン/オフにし、キューが必要かどうかを他の人に知らせる。</summary>
 	[Command(@"q(?:ueue)?(on|off)")]
 	public static void QueueEnabled([Group(1)] string state)
 	{
@@ -586,7 +591,7 @@ static class GameCommands
 
 	/// <name>Call Command</name>
 	/// <syntax>call (name)\ncallnow (name)</syntax>
-	/// <summary>Calls a command from the queue. callnow skips the requirement set by Call Set. If (name) is specified calls a named command instead of the next command in the queue.</summary>
+	/// <summary>キューに追加されたコマンドをコールする。callnow は、CallSet で設定された要件をスキップする。(name)が指定された場合は、キュー内の次のコマンドの代わりに、指定されたコマンドを呼び出す。</summary>
 	[Command(@"call( *now)?( +.+)?")]
 	public static void CallQueuedCommand(string user, [Group(1)] bool now, [Group(2)] string name)
 	{
@@ -597,31 +602,31 @@ static class GameCommands
 			TwitchGame.Instance.SendCallResponse(user, name, response, callChanged);
 			return;
 		}
-		if (callChanged) IRCConnection.SendMessageFormat("@{0}, your call has been changed to {1}.", user, string.IsNullOrEmpty(name) ? "the next queued command" : name);
+		if (callChanged) IRCConnection.SendMessageFormat("@{0}さん：コールが{1}に変更されました。", user, string.IsNullOrEmpty(name) ? "次のキューに" : name);
 		TwitchGame.Instance.CommandQueue.Remove(TwitchGame.Instance.callSend);
 		TwitchGame.ModuleCameras?.SetNotes();
-		IRCConnection.SendMessageFormat("{0} {1}: {2}", TwitchGame.Instance.callWaiting && string.IsNullOrEmpty(user)
-			? "Call waiting, calling"
+		IRCConnection.SendMessageFormat("{0}{1}さんの「{2}」をコールします。", TwitchGame.Instance.callWaiting && string.IsNullOrEmpty(user)
+			? "コール待機中です。"
 			: now
-				? "Bypassing the required number of calls, calling"
+				? "必要なコール数を回避し、"
 				: TwitchGame.Instance.callsNeeded > 1
-					? "Required calls reached, calling"
-					: "Calling", TwitchGame.Instance.callSend.Message.UserNickName, TwitchGame.Instance.callSend.Message.Text);
+					? "必要なコール数に到達したため、"
+					: "", TwitchGame.Instance.callSend.Message.UserNickName, TwitchGame.Instance.callSend.Message.Text);
 		DeleteCallInformation(true);
 		if (TwitchGame.Instance.Bombs.Any(x => x.BackdoorHandleHack))
-			IRCConnection.SendMessage("Hack detected, waiting until the hack is over to execute this command.");
+			IRCConnection.SendMessage("ハッキングが検出されたため、ハッキングが終了するまでこのコマンドを実行できません。");
 		TwitchGame.Instance.StartCoroutine(WaitForCall(new List<IRCMessage>(){ TwitchGame.Instance.callSend.Message }));
 	}
 
 	/// <name>Call All</name>
 	/// <syntax>callall\ncallall force</syntax>
-	/// <summary>Calls all unnamed commands in the queue. If force is specified, named commands are included too.</summary>
+	/// <summary>無名のコマンドをすべてキューからコールする。forceをつけると、名前付きコマンドもコールされる。</summary>
 	[Command(@"callall( *force)?")]
 	public static void CallAllQueuedCommands(string user, bool isWhisper, [Group(1)] bool force)
 	{
 		if (TwitchGame.Instance.CommandQueue.Count == 0)
 		{
-			IRCConnection.SendMessage($"{user}, the queue is empty.", user, !isWhisper);
+			IRCConnection.SendMessage($"{user}さん：キューの中身は空です。", user, !isWhisper);
 			return;
 		}
 
@@ -629,7 +634,7 @@ static class GameCommands
 		var allCommands = TwitchGame.Instance.CommandQueue.Where(item => force || item.Name == null).ToList();
 		if (allCommands.Count == 0)
 		{
-			IRCConnection.SendMessage($"{user}, the queue only contains named commands. Use '!callall force' to call them.", user, !isWhisper);
+			IRCConnection.SendMessage($"{user}さん：キューには名前付きのコマンドのみが含まれています。すべてコールするには、「!callall force」を使用してください。", user, !isWhisper);
 			return;
 		}
 
@@ -638,113 +643,113 @@ static class GameCommands
 		List<IRCMessage> cmdsToExecute = new List<IRCMessage>();
 		foreach (var call in allCommands)
 		{
-			IRCConnection.SendMessageFormat("Calling {0}: {1}", call.Message.UserNickName, call.Message.Text);
+			IRCConnection.SendMessageFormat("{0}さんのコマンド「{1}」をコールしています。", call.Message.UserNickName, call.Message.Text);
 			cmdsToExecute.Add(call.Message);
 		}
 		DeleteCallInformation(true);
 		if (TwitchGame.Instance.Bombs.Any(x => x.BackdoorHandleHack))
-			IRCConnection.SendMessageFormat("Hack detected, waiting until the hack is over to execute {0} command{1}.", cmdsToExecute.Count == 1 ? "this" : "these", cmdsToExecute.Count == 1 ? string.Empty : "s");
+			IRCConnection.SendMessageFormat("ハッキングが検出されました。ハッキング終了後、{0}コマンドは実行されます。", cmdsToExecute.Count == 1 ? "この" : "これらの");
 		TwitchGame.Instance.StartCoroutine(WaitForCall(cmdsToExecute));
 	}
 
 	/// <name>Call Set</name>
 	/// <syntax>callset [minimum]</syntax>
-	/// <summary>Sets a minimum a number of times Call Command must be run for a command to be called.</summary>
+	/// <summary>コマンドのコールに必要な!callの最小回数を設定する。</summary>
 	[Command(@"callset +(\d*)")]
 	public static void CallSetCommand(string user, [Group(1)] int minimum)
 	{
 		if (minimum <= 0 || minimum >= 25)
 		{
-			IRCConnection.SendMessageFormat("@{0}, {1} is in invalid number of calls!", user, minimum);
+			IRCConnection.SendMessageFormat("@{0}さん：{1}はコール数として不適切な値です。", user, minimum);
 			return;
 		}
 
 		TwitchGame.Instance.callsNeeded = minimum;
 		DeleteCallInformation(true);
-		IRCConnection.SendMessageFormat("Set minimum calls to {0}.", minimum);
+		IRCConnection.SendMessageFormat("コール数の最小回数が{0}に設定されました。", minimum);
 	}
 
 	/// <name>Call Count</name>
 	/// <syntax>callcount</syntax>
-	/// <summary>Displays the number of times that the Call Command has been run since a command was last called.</summary>
+	/// <summary>最後にコールされたコマンドから数えて、!Callが実行された回数を表示する。</summary>
 	[Command(@"callcount")]
-	public static void CallCountCommand() => IRCConnection.SendMessageFormat("{0} out of {1} calls needed.", TwitchGame.Instance.CallingPlayers.Count, TwitchGame.Instance.callsNeeded);
+	public static void CallCountCommand() => IRCConnection.SendMessageFormat("{0}/{1}名からのコールが行われました。", TwitchGame.Instance.CallingPlayers.Count, TwitchGame.Instance.callsNeeded);
 
 	/// <name>Delete Call</name>
 	/// <syntax>delcall [user]</syntax>
-	/// <summary>Removes a user's call.</summary>
+	/// <summary>ユーザーのコールを取り消す。</summary>
 	/// <restriction>Mod</restriction>
 	[Command(@"delcall +(.+)", AccessLevel.Mod, AccessLevel.Mod)]
 	public static void DeleteQueuedPlayer([Group(1)] string callUser, string user)
 	{
 		callUser = callUser.FormatUsername();
-		if (string.IsNullOrEmpty(callUser)) IRCConnection.SendMessageFormat("@{0}, please specify a call to remove!", user);
-		else if (!TwitchGame.Instance.CallingPlayers.Keys.Contains(user)) IRCConnection.SendMessageFormat("@{0}, @{1} has not called!", user, callUser);
+		if (string.IsNullOrEmpty(callUser)) IRCConnection.SendMessageFormat("@{0}さん：除去したいコールをしたユーザー名を指定してください！", user);
+		else if (!TwitchGame.Instance.CallingPlayers.Keys.Contains(user)) IRCConnection.SendMessageFormat("@{0}さん@{1}さんはコールしていません。", user, callUser);
 		else
 		{
 			TwitchGame.Instance.CallingPlayers.Remove(callUser);
-			IRCConnection.SendMessageFormat("@{0}, removed @{1}'s call.", user, callUser);
+			IRCConnection.SendMessageFormat("@{0}さん：@{1}さんのコールを削除しました。", user, callUser);
 			TwitchGame.Instance.CallUpdate(true);
 		}
 	}
 
 	/// <name>Uncall</name>
 	/// <syntax>uncall</syntax>
-	/// <summary>Retracts your Call Command when multiple are required.</summary>
+	/// <summary>複数のコールコマンドが必要な際に、コールコマンドを取り消す。</summary>
 	[Command(@"uncall")]
 	public static void RemoveCalledPlayer(string user)
 	{
 		if (!TwitchGame.Instance.CallingPlayers.Keys.Contains(user))
 		{
-			IRCConnection.SendMessageFormat("@{0}, you haven't called yet!", user);
+			IRCConnection.SendMessageFormat("@{0}さん：あなたはコールしていません。", user);
 			return;
 		}
 		TwitchGame.Instance.CallingPlayers.Remove(user);
-		IRCConnection.SendMessageFormat("@{0}, your call has been removed.", user);
+		IRCConnection.SendMessageFormat("@{0}さん：あなたのコールは削除されました。", user);
 		TwitchGame.Instance.CallUpdate(true);
 	}
 
 	/// <name>Call Players</name>
 	/// <syntax>callplayers</syntax>
-	/// <summary>Lists the current players who have called when multiple are required.</summary>
+	/// <summary>複数のコールが必要な際、現在コールしているプレイヤーをリストアップする。</summary>
 	[Command(@"callplayers")]
 	public static void ListCalledPlayers()
 	{
 		int totalCalls = TwitchGame.Instance.CallingPlayers.Count;
 		if (totalCalls == 0)
 		{
-			IRCConnection.SendMessageFormat("No calls have been made.");
+			IRCConnection.SendMessageFormat("コールはありません。");
 			return;
 		}
 		string[] __calls = TwitchGame.Instance.CallingPlayers.Values.ToArray();
 		string[] __callPlayers = TwitchGame.Instance.CallingPlayers.Keys.ToArray();
 		string builder = "";
-		for (int j = 0; j < __calls.Length; j++) builder = builder + ((j == 0) ? "@" : ", @") + __callPlayers[j] + ": " + (string.IsNullOrEmpty(__calls[j]) ? "Next queued command" : __calls[j]);
-		IRCConnection.SendMessageFormat("These players have already called: {0}", builder);
+		for (int j = 0; j < __calls.Length; j++) builder = builder + ((j == 0) ? "@" : ", @") + __callPlayers[j] + ": " + (string.IsNullOrEmpty(__calls[j]) ? "キュー内の次のコマンド：" : __calls[j]);
+		IRCConnection.SendMessageFormat("以下のプレイヤーがコールを行いました：{0}", builder);
 	}
 
 	/// <name>Delete All Calls</name>
 	/// <syntax>delcallall</syntax>
-	/// <summary>Removes all calls.</summary>
+	/// <summary>すべてのコールを削除する。</summary>
 	/// <restriction>Mod</restriction>
 	[Command(@"delcallall", AccessLevel.Mod, AccessLevel.Mod)]
 	public static void DeleteCallInformation(bool silent)
 	{
 		TwitchGame.Instance.CallingPlayers.Clear();
 		TwitchGame.Instance.callWaiting = false;
-		if (!silent) IRCConnection.SendMessageFormat("All call information cleared.");
+		if (!silent) IRCConnection.SendMessageFormat("すべてのコール情報が削除されました。");
 	}
 
 	/// <name>Set Multiplier</name>
 	/// <syntax>setmultiplier [multiplier]</syntax>
-	/// <summary>Sets the time mode multiplier.</summary>
+	/// <summary>倍率を設定する。</summary>
 	/// <restriction>Admin</restriction>
 	[Command(@"setmultiplier +(\d*\.?\d+)", AccessLevel.Admin, AccessLevel.Admin)]
 	public static void SetMultiplier([Group(1)] float multiplier) => OtherModes.SetMultiplier(multiplier);
 
 	/// <name>Solve Bomb</name>
 	/// <syntax>solvebomb</syntax>
-	/// <summary>Solves the currently held bomb.</summary>
+	/// <summary>現在持っている爆弾を解除する。</summary>
 	/// <restriction>SuperUser</restriction>
 	[Command(@"solvebomb", AccessLevel.SuperUser, AccessLevel.SuperUser)]
 	public static void SolveBomb()
@@ -762,36 +767,36 @@ static class GameCommands
 
 	/// <name>Enable Claims</name>
 	/// <syntax>enableclaims</syntax>
-	/// <summary>Enables the ability to claim modules.</summary>
+	/// <summary>モジュールの割り当てを有効にする。</summary>
 	/// <restriction>Admin</restriction>
 	[Command(@"enableclaims", AccessLevel.Admin, AccessLevel.Admin)]
 	public static void EnableClaims()
 	{
 		TwitchModule.ClaimsEnabled = true;
-		IRCConnection.SendMessage("Claims have been enabled.");
+		IRCConnection.SendMessage("モジュールの割り当ては有効になりました。");
 	}
 
 	/// <name>Disable Claims</name>
 	/// <syntax>disableclaims</syntax>
-	/// <summary>Disables the ability to claim modules.</summary>
+	/// <summary>モジュールの割り当てを無効にする。</summary>
 	/// <restriction>Admin</restriction>
 	[Command(@"disableclaims", AccessLevel.Admin, AccessLevel.Admin)]
 	public static void DisableClaims()
 	{
 		TwitchModule.ClaimsEnabled = false;
-		IRCConnection.SendMessage("Claims have been disabled.");
+		IRCConnection.SendMessage("モジュールの割り当ては無効になりました。");
 	}
 
 	/// <name>Assign</name>
 	/// <syntax>assign [user] [codes]</syntax>
-	/// <summary>Assigns modules to a user based on their module codes.</summary>
+	/// <summary>モジュール番号を指定してユーザーにモジュールを振り分ける。</summary>
 	[Command(@"assign +(\S+) +(.+)")]
 	public static void AssignModuleTo([Group(1)] string targetUser, [Group(2)] string queries, string user)
 	{
 		targetUser = targetUser.FormatUsername();
 		if (TwitchPlaySettings.data.AnarchyMode)
 		{
-			IRCConnection.SendMessage($"{user}, assigning modules is not allowed in anarchy mode.");
+			IRCConnection.SendMessage($"{user}さん：アナーキーモード中は、モジュールの振り分けは許可されていません。");
 			return;
 		}
 
@@ -805,14 +810,14 @@ static class GameCommands
 				ModuleCommands.Assign(module, user, targetUser);
 		}
 		if (denied.Count == 1)
-			IRCConnection.SendMessage($"{user}, since you’re not a moderator, {denied[0]} has not been reassigned.", user, false);
+			IRCConnection.SendMessage($"{user}さん：あなたはモデレーターではないため、{denied[0]}は再度振り分けできません。", user, false);
 		else if (denied.Count > 1)
-			IRCConnection.SendMessage($"{user}, since you’re not a moderator, {denied.Take(denied.Count - 1).Join(", ")} and {denied.Last()} have not been reassigned.", user, false);
+			IRCConnection.SendMessage($"{user}さん：あなたはモデレーターではないため、{denied.Take(denied.Count - 1).Join(", ")}, {denied.Last()} は再度振り分けできません。", user, false);
 	}
 
 	/// <name>Bot Unclaim</name>
 	/// <syntax>bot unclaim</syntax>
-	/// <summary>Makes the bot unclaim any module it has claimed.</summary>
+	/// <summary>ボットに割り当てられたモジュールの割り当てを解除する。</summary>
 	/// <restriction>Mod</restriction>
 	[Command(@"bot ?unclaim( ?all)?", AccessLevel.Mod, AccessLevel.Mod)]
 	public static void BotUnclaim()
@@ -824,26 +829,26 @@ static class GameCommands
 
 	/// <name>Disable Interactive</name>
 	/// <syntax>disableinteractive</syntax>
-	/// <summary>Disables interactive mode on the cameras. As if the escape key hadn't been pressed.</summary>
+	/// <summary>カメラのインタラクティブ・モードを無効にする。Escキーが押されなかったときのように画面が固定される。</summary>
 	/// <restriction>Mod</restriction>
 	[Command(@"disableinteractive", AccessLevel.Mod, AccessLevel.Mod)]
 	public static void DisableInteractive() => TwitchGame.ModuleCameras.DisableInteractive();
 
 	/// <name>Return To Setup</name>
 	/// <syntax>returntosetup</syntax>
-	/// <summary>Forces the game to return to the setup room.</summary>
+	/// <summary>事務所に戻る。</summary>
 	/// <restriction>Mod</restriction>
 	[Command(@"(?:returntosetup|leave|exit)(?:room)?|return", AccessLevel.Mod, AccessLevel.Mod)]
 	public static void ReturnToSetup() => SceneManager.Instance.ReturnToSetupState();
 
 	/// <name>Enable Interactive Mode</name>
 	/// <syntax>enableinteractivemode</syntax>
-	/// <summary>Enables interactive mode, allowing the streamer to interact with the bomb.</summary>
+	/// <summary>インタラクティブ・モードを有効にする。「Streamer」権限を持つ人のみ可能。</summary>
 	/// <restriction>Streamer</restriction>
 	[Command(@"enableinteractivemode", AccessLevel.Streamer, AccessLevel.Streamer)]
 	public static void EnableInteractiveMode()
 	{
-		IRCConnection.SendMessage("Interactive Mode Enabled");
+		IRCConnection.SendMessage("インタラクティブモードが有効になりました。");
 		TwitchPlaySettings.data.EnableInteractiveMode = true;
 		TwitchPlaySettings.WriteDataToFile();
 		TwitchGame.EnableDisableInput();
@@ -851,12 +856,12 @@ static class GameCommands
 
 	/// <name>Disable Interactive Mode</name>
 	/// <syntax>disableinteractivemode</syntax>
-	/// <summary>Disables interactive mode, preventing the streamer from interacting with the bomb.</summary>
+	/// <summary>インタラクティブモードを無効にし、配信者が爆弾を操作できないようにする。</summary>
 	/// <restriction>Streamer</restriction>
 	[Command(@"disableinteractivemode", AccessLevel.Streamer, AccessLevel.Streamer)]
 	public static void DisableInteractiveMode()
 	{
-		IRCConnection.SendMessage("Interactive Mode Disabled");
+		IRCConnection.SendMessage("インタラクティブモードは無効になりました。");
 		TwitchPlaySettings.data.EnableInteractiveMode = false;
 		TwitchPlaySettings.WriteDataToFile();
 		TwitchGame.EnableDisableInput();
@@ -864,29 +869,29 @@ static class GameCommands
 
 	/// <name>Solve Unsupported Modules</name>
 	/// <syntax>solveunsupportedmodules</syntax>
-	/// <summary>Solves modules that aren't supported by TP.</summary>
+	/// <summary>TP未対応のモジュールを解除する。</summary>
 	/// <restriction>Admin</restriction>
 	[Command(@"solveunsupportedmodules", AccessLevel.Admin, AccessLevel.Admin)]
 	public static void SolveUnsupportedModules()
 	{
-		IRCConnection.SendMessage("Solving unsupported modules.");
+		IRCConnection.SendMessage("非対応のモジュールを解除します。");
 		TwitchModule.SolveUnsupportedModules();
 	}
 
 	/// <name>Solve Boss Modules</name>
 	/// <syntax>solvebossmodules</syntax>
-	/// <summary>Solves modules that depend on the solve count of the bomb or are considered boss modules according to the repository of manual pages.</summary>
+	/// <summary>爆弾の解除数に依存するモジュールや、マニュアルページのリポジトリ上ボスモジュールとみなされるモジュールを解除する。</summary>
 	/// <restriction>SuperUser</restriction>
 	[Command(@"solvebossmodules", AccessLevel.SuperUser, AccessLevel.SuperUser)]
 	public static void SolveBossModules()
 	{
-		IRCConnection.SendMessage("Solving boss modules");
+		IRCConnection.SendMessage("ボスモジュールを解除します。");
 		TwitchGame.Instance.SolveBossModules();
 	}
 
 	/// <name>Custom Messages</name>
 	/// <syntax>ttks\nttksleft\nttksright\ninfozen\nqhelp</syntax>
-	/// <summary>These commands send a predefined message to chat. Streamers can choose their own messages but the ones mentioned here are included by default.</summary>
+	/// <summary>あらかじめ定義されたメッセージをチャットに送信します。配信者はTwitchPlaySettings.jsonにてメッセージをカスタマイズできるが、ここで紹介したものはデフォルトで含まれている。</summary>
 	[Command(null)]
 	public static bool DefaultCommand(string cmd, string user, bool isWhisper)
 	{
@@ -900,7 +905,7 @@ static class GameCommands
 
 	/// <name>Show Mission Name</name>
 	/// <syntax>status\nmission</syntax>
-	/// <summary>View currently running mission name, if any.</summary>
+	/// <summary>現在進行中のミッションを表示する。</summary>
 	[Command(@"(?:status|mission)")]
 	public static void Mission(string cmd, string user, bool isWhisper)
 	{
@@ -922,12 +927,12 @@ static class GameCommands
 	{
 		if (isWhisper)
 		{
-			IRCConnection.SendMessage($"{user}, claiming modules is not allowed in whispers.", user, false);
+			IRCConnection.SendMessage($"{user}さん：ウィスパーコメントでは、モジュールの割り当ては行えません。", user, false);
 			return;
 		}
 		if (TwitchPlaySettings.data.AnarchyMode)
 		{
-			IRCConnection.SendMessage($"{user}, claiming modules is not allowed in anarchy mode.");
+			IRCConnection.SendMessage($"{user}さん：アナーキーモードでは、モジュールの割り当ては行えません。");
 			return;
 		}
 		foreach (var module in modules)
@@ -957,7 +962,7 @@ static class GameCommands
 		{
 			string newMessage = string.Format(ownedListMsg, targetUser, string.Join(", ", claimed.ToArray(), 0, Math.Min(claimed.Count, 5)));
 			if (claimed.Count > 5)
-				newMessage += $", and {claimed.Count - 5} more.";
+				newMessage += $", その他{claimed.Count - 5}個";
 			IRCConnection.SendMessage(newMessage, targetUser, !isWhisper);
 		}
 		else
@@ -973,7 +978,7 @@ static class GameCommands
 
 		if (TwitchGame.Instance.Bombs.Any(x => x.BackdoorHandleHack)) {
 			yield return new WaitUntil(() => TwitchGame.Instance.Bombs.All(x => !x.BackdoorHandleHack));
-			IRCConnection.SendMessage("The hack is over, executing all commands held up due to the hack.");
+			IRCConnection.SendMessage("ハッキングが終了しました。ハッキング中に入力されたすべてのコマンドを実行します。");
 		}
 		foreach (IRCMessage m in calledCommands)
 			IRCConnection.ReceiveMessage(m);

@@ -81,11 +81,11 @@ public class TwitchHoldable
 
 		IRCConnection.SendMessageFormat(TwitchPlaySettings.data.AwardHoldableStrike,
 			ID,
-			strikeCount == 1 ? "a" : strikeCount.ToString(),
-			strikeCount == 1 ? "" : "s",
+			strikeCount == 1 ? "" : strikeCount.ToString(),
+			strikeCount == 1 ? "" : "",
 			strikePenalty,
 			userNickName,
-			string.IsNullOrEmpty(StrikeMessage) ? "" : " caused by " + StrikeMessage);
+			string.IsNullOrEmpty(StrikeMessage) ? "" : "原因：" + StrikeMessage);
 		if (strikeCount <= 0) return;
 
 		string recordMessageTone = $"Holdable ID: {ID} | Player: {userNickName} | Strike";
@@ -95,25 +95,25 @@ public class TwitchHoldable
 		int currentReward = Convert.ToInt32(originalReward * (1 - (1 - TwitchPlaySettings.data.AwardDropMultiplierOnStrike) * OtherModes.ScoreMultiplier));
 		TwitchPlaySettings.AddRewardBonus(currentReward - originalReward);
 		if (currentReward != originalReward)
-			IRCConnection.SendMessage($"Reward {(currentReward > 0 ? "reduced" : "increased")} to {currentReward} points.");
+			IRCConnection.SendMessage($"報酬が{currentReward}ポイントに{(currentReward > 0 ? "減少" : "増加")}しました。");
 		if (OtherModes.TimeModeOn)
 		{
 			bool multiDropped = OtherModes.DropMultiplier();
 			float multiplier = OtherModes.GetMultiplier();
 			string tempMessage = multiDropped
-				? "Multiplier reduced to " + Math.Round(multiplier, 1) + " and time"
-				: $"Multiplier set at {TwitchPlaySettings.data.TimeModeMinMultiplier}, cannot be further reduced.  Time";
+				? "倍率が" + Math.Round(multiplier, 1) + "に減少し、"
+				: $"倍率は{TwitchPlaySettings.data.TimeModeMinMultiplier}になり、これ以上下がりません。";
 			if (bomb.CurrentTimer < (TwitchPlaySettings.data.TimeModeMinimumTimeLost / TwitchPlaySettings.data.TimeModeTimerStrikePenalty))
 			{
 				bomb.Bomb.GetTimer().TimeRemaining = bomb.CurrentTimer - TwitchPlaySettings.data.TimeModeMinimumTimeLost;
-				tempMessage += $" reduced by {TwitchPlaySettings.data.TimeModeMinimumTimeLost} seconds.";
+				tempMessage += $"時間は{TwitchPlaySettings.data.TimeModeMinimumTimeLost}秒減少しました。";
 			}
 			else
 			{
 				float timeReducer = bomb.CurrentTimer * TwitchPlaySettings.data.TimeModeTimerStrikePenalty;
 				double easyText = Math.Round(timeReducer, 1);
 				bomb.Bomb.GetTimer().TimeRemaining = bomb.CurrentTimer - timeReducer;
-				tempMessage += $" reduced by {Math.Round(TwitchPlaySettings.data.TimeModeTimerStrikePenalty * 100, 1)}%. ({easyText} seconds)";
+				tempMessage += $"時間が{Math.Round(TwitchPlaySettings.data.TimeModeTimerStrikePenalty * 100, 1)}%({easyText}秒)減少しました。";
 			}
 			IRCConnection.SendMessage(tempMessage);
 			bomb.StrikeCount = 0;
@@ -142,7 +142,7 @@ public class TwitchHoldable
 	{
 		if (HandlerMethod == null && processCommand == null)
 		{
-			IRCConnection.SendMessage("Sorry @{0}, this holdable is not supported by Twitch Plays.", userNickName, !isWhisper, userNickName);
+			IRCConnection.SendMessage("@{0}さん：この持ち上げ可能物はTwitch Playsに対応していません。", userNickName, !isWhisper, userNickName);
 			yield break;
 		}
 
@@ -443,18 +443,18 @@ public class TwitchHoldable
 	{
 		if (CommandType == typeof(AlarmClockCommands))
 		{
-			HelpMessage = "Snooze the alarm clock with “!{0} snooze”.";
+			HelpMessage = "アラームを一時停止する：「!{0} snooze」";
 			HelpMessage += (TwitchPlaySettings.data.AllowSnoozeOnly && !TwitchPlaySettings.data.AnarchyMode)
-				? " (Current settings forbid turning the alarm clock back on.)"
-				: " Alarm clock may also be turned back on with “!{0} snooze”. Toggle the alarm clock 5 times with “!{0} snooze 5”";
+				? "(現在の設定では、目覚まし時計をオンに戻すことはできない)"
+				: " | アラームを再起動する：「!{0} snooze」 | アラームを5回切り替える：「!{0} snooze 5」";
 		}
 		else if (CommandType == typeof(IRCConnectionManagerCommands))
 		{
-			HelpMessage = "Disconnect the IRC from Twitch Plays with “!{0} disconnect”. For obvious reasons, only the streamer may do this.";
+			HelpMessage = "Twitch Playsのチャットとの接続を切断する：「!{0} disconnect」(「Streamer」権限があるユーザーのみ実行可能)";
 		}
 		else if (CommandType == typeof(DossierCommands))
 		{
-			HelpMessage = "Move up in the dossier menu with “!{0} up”. Move down in the dossier menu 3 times with “!{0} down 3”. Select the current menu item with “!{0} select”. Select 2nd menu item from the top with “!{0} select 2”.";
+			HelpMessage = "バインダー内のメニューを上に移動する：「!{0} up」 | バインダー内のメニューを下に回移動する：「!{0} down 3」 | 現在選択中のメニューを選ぶ：「!{0} select」 | 上から2番目の項目を選択する：「!{0} select 2」";
 		}
 
 		if (string.IsNullOrEmpty(HelpMessage)) return false;
@@ -481,7 +481,7 @@ public class TwitchHoldable
 			return;
 		}
 		if (!message.Equals("parseerror", StringComparison.InvariantCultureIgnoreCase)) return;
-		IRCConnection.SendMessage($"Sorry @{userNickname}, there was an error parsing the command for !{ID}", userNickname, !isWhisper);
+		IRCConnection.SendMessage($"@{userNickname}さん：!{ID}に対するコマンドの解析に失敗しました。", userNickname, !isWhisper);
 		parseerror = true;
 	}
 

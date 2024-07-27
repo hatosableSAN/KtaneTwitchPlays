@@ -123,12 +123,7 @@ public class TwitchBomb : MonoBehaviour
 		SetMainUIWindowVisibility(visible);
 	}
 
-	private void OnDestroy()
-	{
-		StopAllCoroutines();
-		if (BackdoorHandleHack)
-			SetMainUIWindowVisibility(true);
-	}
+	private void OnDestroy() => StopAllCoroutines();
 	#endregion
 
 	public IEnumerator HideMainUIWindow()
@@ -159,11 +154,11 @@ public class TwitchBomb : MonoBehaviour
 		IRCConnection.Instance.HighlightTransform.localScale = scale;
 	}
 
-	public void CauseExplosionByVote() => StartCoroutine(DelayBombExplosionCoroutine(TwitchPlaySettings.data.BombDetonateCommand, "Voted detonation", 1.0f));
+	public void CauseExplosionByVote() => StartCoroutine(DelayBombExplosionCoroutine(TwitchPlaySettings.data.BombDetonateCommand, "voteによる爆発", 1.0f));
 
 	public void CauseExplosionByModuleCommand(string message, string reason) => StartCoroutine(DelayBombExplosionCoroutine(message, reason, 0.1f));
 
-	public void CauseExplosionByTrainingModeTimeout() => StartCoroutine(DelayBombExplosionCoroutine(TwitchPlaySettings.data.BombDetonateCommand, "Training Mode Timeout", 1.0f));
+	public void CauseExplosionByTrainingModeTimeout() => StartCoroutine(DelayBombExplosionCoroutine(TwitchPlaySettings.data.BombDetonateCommand, "トレーニングモード終わり", 1.0f));
 
 	public float CurrentTimer
 	{
@@ -171,10 +166,10 @@ public class TwitchBomb : MonoBehaviour
 		set => Bomb.GetTimer().TimeRemaining = (value < 0) ? 0 : value;
 	}
 
-	public void CauseVersusExplosion() => StartCoroutine(DelayBombExplosionCoroutine(null, "Evil defeated Good", 0.1f));
+	public void CauseVersusExplosion() => StartCoroutine(DelayBombExplosionCoroutine(null, "白組の勝ち", 0.1f));
 
 	#region Private Methods
-	public IEnumerator DelayBombExplosionCoroutine() => DelayBombExplosionCoroutine(TwitchPlaySettings.data.BombDetonateCommand, "Detonate Command", 1.0f);
+	public IEnumerator DelayBombExplosionCoroutine() => DelayBombExplosionCoroutine(TwitchPlaySettings.data.BombDetonateCommand, "起爆コマンド", 1.0f);
 
 	private IEnumerator DelayBombExplosionCoroutine(string message, string reason, float delay)
 	{

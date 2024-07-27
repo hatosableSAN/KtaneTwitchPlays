@@ -9,7 +9,9 @@ public class InvisibleWallsComponentSolver : ComponentSolver
 		base(module)
 	{
 		_buttons = ((InvisibleWallsComponent) module.BombComponent).Buttons;
-		ModInfo = ComponentSolverFactory.GetModuleInfo("Maze", "!{0} move up down left right, !{0} move udlr [make a series of white icon moves]");
+		ModInfo = ComponentSolverFactory.GetModuleInfo("Maze", "!{0} move up down left right [up=上、down=下、left=左、right=右に移動する] | !{0} move udlr [最初の文字だけでも良い]");
+		ModInfo.moduleTranslatedName = "迷路";
+		ModInfo.manualCode = "https://ktane.timwi.de/HTML/Maze%20translated%20(%E6%97%A5%E6%9C%AC%E8%AA%9E%20%E2%80%94%20%E8%BF%B7%E8%B7%AF).html";
 	}
 
 	protected internal override IEnumerator RespondToCommandInternal(string inputCommand)

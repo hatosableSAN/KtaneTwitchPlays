@@ -129,7 +129,7 @@ public static class GeneralExtensions
 		return str.Substring(0, maxLength);
 	}
 
-	public static string Pluralize(this float number, string singular) => $"{number} {(number == 1 ? singular : singular + "s")}";
+	public static string Pluralize(this float number, string singular) => $"{number} {(number == 1 ? singular : singular + "")}";
 
 	public static int? TryParseInt(this string number) => int.TryParse(number, out int i) ? (int?) i : null;
 

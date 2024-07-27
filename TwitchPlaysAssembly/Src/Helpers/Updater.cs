@@ -16,39 +16,45 @@ static class Updater
 
 	public static IEnumerator CheckForUpdates()
 	{
-		if (UpdateAvailable) yield break;
+  		yield return null;
+		IRCConnection.SendMessage("自動アップデートは無効化されています。");
+		// if (UpdateAvailable) yield break;
 
-		LastCheck = DateTime.Now;
+		// LastCheck = DateTime.Now;
 
-		// Download the build
-		UnityWebRequest request = UnityWebRequest.Get("https://www.dropbox.com/s/30vsm4a1p9yps70/Twitch%20Plays.zip?dl=1");
+		// // Download the build
+		// UnityWebRequest request = UnityWebRequest.Get("https://www.dropbox.com/s/30vsm4a1p9yps70/Twitch%20Plays.zip?dl=1");
 
-		yield return request.SendWebRequest();
+		// yield return request.SendWebRequest();
 
-		// Delete any previously downloaded copy
-		DirectoryInfo buildFolder = new DirectoryInfo(Path.Combine(BuildStorage, "Twitch Plays"));
-		if (buildFolder.Exists) buildFolder.Delete(true);
+		// // Delete any previously downloaded copy
+		// DirectoryInfo buildFolder = new DirectoryInfo(Path.Combine(BuildStorage, "Twitch Plays"));
+		// if (buildFolder.Exists) buildFolder.Delete(true);
 
-		// Extract the zip file which should only contain one folder, "Twitch Plays".
-		using (ZipStorer zip = ZipStorer.Open(new MemoryStream(request.downloadHandler.data), FileAccess.Read))
-		{
-			foreach (ZipStorer.ZipFileEntry entry in zip.ReadCentralDir())
-			{
-				zip.ExtractFile(entry, Path.Combine(BuildStorage, entry.FilenameInZip));
-			}
-		}
+		// // Extract the zip file which should only contain one folder, "Twitch Plays".
+		// using (ZipStorer zip = ZipStorer.Open(new MemoryStream(request.downloadHandler.data), FileAccess.Read))
+		// {
+		// 	foreach (ZipStorer.ZipFileEntry entry in zip.ReadCentralDir())
+		// 	{
+		// 		zip.ExtractFile(entry, Path.Combine(BuildStorage, entry.FilenameInZip));
+		// 	}
+		// }
 
-		string dllPath = new string[] { BuildStorage, "Twitch Plays", "TwitchPlaysAssembly.dll" }.Aggregate(Path.Combine);
+		// string dllPath = new string[] { BuildStorage, "Twitch Plays", "TwitchPlaysAssembly.dll" }.Aggregate(Path.Combine);
 
-		// Check to see if the build is actually newer (and if the dll actually exists).
-		UpdateAvailable = File.Exists(dllPath) && GetBuildDateTime(dllPath) > GetCurrentBuildDateTime();
+		// // Check to see if the build is actually newer (and if the dll actually exists).
+		// UpdateAvailable = File.Exists(dllPath) && GetBuildDateTime(dllPath) > GetCurrentBuildDateTime();
 
-		// Delete the build if it's old, so we don't just leave stuff around in the temporary directory.
-		if (!UpdateAvailable) buildFolder.Delete(true);
+		// // Delete the build if it's old, so we don't just leave stuff around in the temporary directory.
+		// if (!UpdateAvailable) buildFolder.Delete(true);
 	}
 
 	public static IEnumerator Update(bool forced)
 	{
+		yield return null;
+		IRCConnection.SendMessage("自動アップデートは無効化されています。");
+
+		/* 
 		UpdateAvailable |= forced;
 
 		if (!UpdateAvailable) yield return CheckForUpdates();
@@ -74,25 +80,28 @@ static class Updater
 		buildFolder.MoveToSafe(modFolder);
 
 		GlobalCommands.RestartGame();
+		*/
 	}
 
 	public static IEnumerator Revert()
 	{
-		var previousBuild = new DirectoryInfo(Path.Combine(TwitchPlaysService.DataFolder, "Previous Build"));
-		if (!previousBuild.Exists)
-		{
-			IRCConnection.SendMessage("There is no previous version of Twitch Plays to revert to.");
-			yield break;
-		}
+  		yield return null;
+		IRCConnection.SendMessage("自動アップデートは無効化されています。");
+		// var previousBuild = new DirectoryInfo(Path.Combine(TwitchPlaysService.DataFolder, "Previous Build"));
+		// if (!previousBuild.Exists)
+		// {
+		// 	IRCConnection.SendMessage("There is no previous version of Twitch Plays to revert to.");
+		// 	yield break;
+		// }
 
-		IRCConnection.SendMessage("Reverting to the previous Twitch Plays build and restarting.");
+		// IRCConnection.SendMessage("Reverting to the previous Twitch Plays build and restarting.");
 
-		DirectoryInfo modFolder = new DirectoryInfo(GetModFolder());
-		modFolder.Delete(true);
+		// DirectoryInfo modFolder = new DirectoryInfo(GetModFolder());
+		// modFolder.Delete(true);
 
-		previousBuild.MoveToSafe(modFolder);
+		// previousBuild.MoveToSafe(modFolder);
 
-		GlobalCommands.RestartGame();
+		// GlobalCommands.RestartGame();
 	}
 
 	public static DateTime GetBuildDateTime(string dllPath)

@@ -95,6 +95,22 @@ public class TwitchModule : MonoBehaviour
 		set => _headerText = value;
 	}
 
+	private string _translatedName;
+
+	public string TranslatedName
+	{
+		get => _translatedName ?? ((Solver != null && Solver.ModInfo.moduleTranslatedName != null) ? Solver.ModInfo.moduleTranslatedName : HeaderText);
+		set => _translatedName = value;
+	}
+
+	private string _translatedAuthor;
+
+	public string TranslatedAuthor
+	{
+		get => _translatedAuthor ?? ((Solver != null && Solver.ModInfo.moduleTranslatedAuthor != null) ? Solver.ModInfo.moduleTranslatedAuthor : string.Empty);
+		set => _translatedAuthor = value;
+	}
+
 	public Coroutine TakeInProgress;
 	public string TakeUser;
 	public bool TakeConfirmationShown; // Confirmation on taking a module that has a queued claim
@@ -199,7 +215,6 @@ public class TwitchModule : MonoBehaviour
 					var displayName = BombComponent.GetModuleDisplayName();
 					ModuleData.DataHasChanged |= displayName != ModInfo.moduleDisplayName;
 					ModInfo.moduleDisplayName = displayName;
-
 					ModuleData.WriteDataToFile();
 				}
 
@@ -232,8 +247,8 @@ public class TwitchModule : MonoBehaviour
 				CanvasGroupUnsupported.gameObject.SetActive(Solver.UnsupportedModule);
 
 				IDTextUnsupported.text = BombComponent is ModBombComponent
-					? $"To solve this\nmodule, use\n!{Code} solve"
-					: $"To disarm this\nneedy, use\n!{Code} solve";
+					? $"「!{Code} solve」\nを入力して、\n解除する"
+					: $"「!{Code} solve」\nを入力して、\n解除する";
 				if (Solver.UnsupportedModule)
 					UnsupportedComponents.Add(this);
 
@@ -305,7 +320,7 @@ public class TwitchModule : MonoBehaviour
 
 		yield return new WaitUntil(() => !Hidden);
 
-		IRCConnection.SendMessage($"Module {Code} is {HeaderText}");
+		IRCConnection.SendMessage($"モジュール{Code}は、{TranslatedName}です！");
 
 		if (TwitchPlaySettings.data.EnableBossAutoViewPin)
 		{
@@ -490,32 +505,32 @@ public class TwitchModule : MonoBehaviour
 	public ClaimResult TryClaim(string userNickName, bool viewRequested = false, bool viewPinRequested = false)
 	{
 		if (Votes.Active && Votes.CurrentVoteType == VoteTypes.Solve && Votes.voteModule == this)
-			return new ClaimResult(false, $"@{userNickName}, module {Code} ({HeaderText}) is being votesolved.");
+			return new ClaimResult(false, $"@{userNickName}さん：モジュール{Code} ({TranslatedName})は自動解除の投票中です。");
 
 		if (Solver.AttemptedForcedSolve)
-			return new ClaimResult(false, $"@{userNickName}, module {Code} ({HeaderText}) is being solved automatically.");
+			return new ClaimResult(false, $"@{userNickName}さん：モジュール{Code} ({TranslatedName})は自動解除中です。");
 
 		if (TwitchPlaySettings.data.AnarchyMode)
-			return new ClaimResult(false, $"@{userNickName}, claiming modules is not allowed in anarchy mode.");
+			return new ClaimResult(false, $"@{userNickName}さん：アナーキーモードではモジュールを割り当てることができません。");
 
 		if (!ClaimsEnabled && !UserAccess.HasAccess(userNickName, AccessLevel.Admin, true))
-			return new ClaimResult(false, $"@{userNickName}, claims have been disabled.");
+			return new ClaimResult(false, $"@{userNickName}さん：割り当ては無効化されています。");
 
 		if (Solved)
-			return new ClaimResult(false, $"@{userNickName}, module {Code} ({HeaderText}) is already solved.");
+			return new ClaimResult(false, $"@{userNickName}さん：モジュール{Code} ({TranslatedName})は既に解除されました。");
 
 		if (!CanBeClaimed)
-			return new ClaimResult(false, $"@{userNickName}, module {Code} ({HeaderText}) cannot be claimed.");
+			return new ClaimResult(false, $"@{userNickName}さん：モジュール{Code} ({TranslatedName})は割り当てることができません。");
 
 		// Already claimed by the same user
 		if (userNickName.Equals(PlayerName))
-			return new ClaimResult(false, string.Format(TwitchPlaySettings.data.ModuleAlreadyOwned, userNickName, Code, HeaderText));
+			return new ClaimResult(false, string.Format(TwitchPlaySettings.data.ModuleAlreadyOwned, userNickName, Code, TranslatedName));
 
 		// Claimed by someone else ⇒ queue
 		if (PlayerName != null)
 		{
 			AddToClaimQueue(userNickName, viewRequested, viewPinRequested);
-			return new ClaimResult(false, string.Format(TwitchPlaySettings.data.AlreadyClaimed, Code, PlayerName, userNickName, HeaderText));
+			return new ClaimResult(false, string.Format(TwitchPlaySettings.data.AlreadyClaimed, Code, PlayerName, userNickName, TranslatedName));
 		}
 
 		// Would violate the claim limit ⇒ queue
@@ -535,7 +550,7 @@ public class TwitchModule : MonoBehaviour
 			if (lastClaimedTime != null && DateTime.UtcNow.TotalSeconds() < TwitchPlaySettings.data.InstantModuleClaimCooldownExpiry + lastClaimedTime.Value)
 			{
 				AddToClaimQueue(userNickName, viewRequested, viewPinRequested);
-				return new ClaimResult(false, string.Format(TwitchPlaySettings.data.ClaimCooldown, Code, TwitchPlaySettings.data.InstantModuleClaimCooldown, userNickName, HeaderText));
+				return new ClaimResult(false, string.Format(TwitchPlaySettings.data.ClaimCooldown, Code, TwitchPlaySettings.data.InstantModuleClaimCooldown, userNickName, TranslatedName));
 			}
 		}
 
@@ -543,7 +558,7 @@ public class TwitchModule : MonoBehaviour
 		SetClaimedBy(userNickName);
 		if (viewRequested)
 			ViewPin(userNickName, viewPinRequested);
-		return new ClaimResult(true, string.Format(TwitchPlaySettings.data.ModuleClaimed, Code, userNickName, HeaderText));
+		return new ClaimResult(true, string.Format(TwitchPlaySettings.data.ModuleClaimed, Code, userNickName, TranslatedName));
 	}
 
 	public void SetClaimedBy(string userNickName)
@@ -559,16 +574,16 @@ public class TwitchModule : MonoBehaviour
 	{
 		if (PlayerName == null)
 			return;
-		IRCConnection.SendMessage(string.Format(TwitchPlaySettings.data.ModuleUnclaimed, Code, PlayerName, HeaderText));
+		IRCConnection.SendMessage(string.Format(TwitchPlaySettings.data.ModuleUnclaimed, Code, PlayerName, TranslatedName));
 		RemoveFromClaimQueue(PlayerName);
 		SetBannerColor(unclaimedBackgroundColor);
 		PlayerName = null;
 		CameraPriority &= ~CameraPriority.Claimed;
 	}
 
-	public void CommandError(string userNickName, string message) => IRCConnection.SendMessageFormat(TwitchPlaySettings.data.CommandError, userNickName, Code, HeaderText, message);
+	public void CommandError(string userNickName, string message) => IRCConnection.SendMessageFormat(TwitchPlaySettings.data.CommandError, userNickName, Code, TranslatedName, message);
 
-	public void CommandInvalid(string userNickName) => IRCConnection.SendMessageFormat(TwitchPlaySettings.data.InvalidCommand, userNickName, Code, HeaderText);
+	public void CommandInvalid(string userNickName) => IRCConnection.SendMessageFormat(TwitchPlaySettings.data.InvalidCommand, userNickName, Code, TranslatedName);
 
 	public void UpdateLayerData()
 	{
@@ -760,6 +775,7 @@ public class TwitchModule : MonoBehaviour
 
 	#region Properties
 	private string _playerName;
+
 	public string PlayerName
 	{
 		set
@@ -782,6 +798,8 @@ public class TwitchModule : MonoBehaviour
 			return angleBetween < 90.0f;
 		}
 	}
+
+	public string Author { get; internal set; }
 
 	#endregion
 }

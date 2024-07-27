@@ -10,6 +10,8 @@ using UnityEngine;
 public class ModuleInformation
 {
 	public string moduleDisplayName = string.Empty;
+	public string moduleTranslatedAuthor;
+	public string moduleTranslatedName;
 	public string moduleID;
 
 	public bool scoreStringOverride;
@@ -201,33 +203,33 @@ public static class ModuleData
 		DebugHelper.Log($"Writing of file {path} completed successfully.");
 	}
 
-	public static bool LoadDataFromFile()
+	public static bool LoadDataFromFile()//ModuleInformation.jsonの読み込み
 	{
 		FileModuleInformation[] modInfo;
 		string path = Path.Combine(Application.persistentDataPath, usersSavePath);
 		try
 		{
 			DebugHelper.Log($"Loading Module information data from file: {path}");
-			modInfo = SettingsConverter.Deserialize<FileModuleInformation[]>(File.ReadAllText(path));
+			modInfo = SettingsConverter.Deserialize<FileModuleInformation[]>(File.ReadAllText(path));//jsonオブジェクトの解析？
 			LastRead = modInfo;
 		}
-		catch (FileNotFoundException)
+		catch (FileNotFoundException)//ファイルがなかった
 		{
 			DebugHelper.LogWarning($"File {path} was not found.");
 			return false;
 		}
-		catch (Exception ex)
+		catch (Exception ex)//何らかのエラー
 		{
 			DebugHelper.LogException(ex);
 			return false;
 		}
 
-		foreach (var fileInfo in modInfo)
+		foreach (var fileInfo in modInfo)//あったら
 		{
 			ModuleInformation defaultInfo = null;
 			if (fileInfo.moduleID != null)
 			{
-				defaultInfo = ComponentSolverFactory.GetDefaultInformation(fileInfo.moduleID);
+				defaultInfo = ComponentSolverFactory.GetDefaultInformation(fileInfo.moduleID);//TP本体にあるデータを読み込む
 			}
 
 			var info = new ModuleInformation();
@@ -252,7 +254,7 @@ public static class ModuleData
 						value = baseFieldInfo.GetValue(defaultInfo);
 					}
 
-					baseFieldInfo.SetValue(info, value);
+					baseFieldInfo.SetValue(info, value);//値を設定している
 				}
 			}
 

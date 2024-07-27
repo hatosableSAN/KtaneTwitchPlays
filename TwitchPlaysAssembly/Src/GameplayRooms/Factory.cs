@@ -133,8 +133,8 @@ public sealed class Factory : GameRoom
 				else
 					TwitchGame.ModuleCameras.DisableCameraWall();
 			}
-			bombHandle.BombName = $"Bomb {currentBombID} of {(_infiniteMode ? "∞" : BombCount.ToString())}";
-			IRCConnection.SendMessage($"Bomb {currentBombID++} of {(_infiniteMode ? "∞" : BombCount.ToString())} is now live.");
+			bombHandle.BombName = $"{currentBombID}{(_infiniteMode ? "∞" : BombCount.ToString())}個目の爆弾";
+			IRCConnection.SendMessage($"{currentBombID++}/{(_infiniteMode ? "∞" : BombCount.ToString())}個目の爆弾が起動しました！");
 
 			if (TwitchPlaySettings.data.EnableAutomaticEdgework)
 			{

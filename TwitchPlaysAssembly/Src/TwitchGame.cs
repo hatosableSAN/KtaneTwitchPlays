@@ -196,26 +196,26 @@ public class TwitchGame : MonoBehaviour
 		string bombMessage = "";
 		if (OtherModes.VSModeOn && (hasDetonated || hasBeenSolved))
 		{
-			OtherModes.Team winner = OtherModes.Team.Good;
-			if (OtherModes.GetGoodHealth() == 0)
+			OtherModes.Team winner = OtherModes.Team.Red;
+			if (OtherModes.GetRedHealth() == 0)
 			{
-				winner = OtherModes.Team.Evil;
-				bombMessage = TwitchPlaySettings.data.VersusEvilHeader;
+				winner = OtherModes.Team.White;
+				bombMessage = TwitchPlaySettings.data.VersusWhiteHeader;
 			}
-			else if (OtherModes.GetEvilHealth() == 0)
+			else if (OtherModes.GetWhiteHealth() == 0)
 			{
-				winner = OtherModes.Team.Good;
-				bombMessage = TwitchPlaySettings.data.VersusGoodHeader;
+				winner = OtherModes.Team.Red;
+				bombMessage = TwitchPlaySettings.data.VersusRedHeader;
 			}
 
 			bombMessage += string.Format(TwitchPlaySettings.data.VersusEndMessage,
-				winner == OtherModes.Team.Good ? "good" : "evil", timeRemainingFormatted);
+				winner == OtherModes.Team.Red ? "Red" : "White", timeRemainingFormatted);
 			bombMessage += TwitchPlaySettings.GiveBonusPoints();
 
-			if (winner == OtherModes.Team.Good)
-				bombMessage += TwitchPlaySettings.data.VersusGoodFooter;
-			else if (winner == OtherModes.Team.Evil)
-				bombMessage += TwitchPlaySettings.data.VersusEvilFooter;
+			if (winner == OtherModes.Team.Red)
+				bombMessage += TwitchPlaySettings.data.VersusRedFooter;
+			else if (winner == OtherModes.Team.White)
+				bombMessage += TwitchPlaySettings.data.VersusWhiteFooter;
 
 			if (lastBomb && hasBeenSolved)
 				Leaderboard.Instance.Success = true;
@@ -327,7 +327,7 @@ public class TwitchGame : MonoBehaviour
 		}
 
 		if (awardedPoints.Count > 0)
-			IRCConnection.SendMessage($"These players have been awarded points for managing a needy: {awardedPoints.Select(pair => $"{pair.Key} ({pair.Value})").Join(", ")}");
+			IRCConnection.SendMessage($"特殊モジュールを管理したため、以下のプレイヤーは報酬ポイントを獲得します：{awardedPoints.Select(pair => $"{pair.Key} ({pair.Value})").Join(", ")}");
 
 		GameCommands.unclaimedModules = null;
 		DestroyComponentHandles();
@@ -389,7 +389,7 @@ public class TwitchGame : MonoBehaviour
 		if (callResponse == CallResponse.Success)
 			GameCommands.CallQueuedCommand("", true, commandToCall);
 		else if (callResponse == CallResponse.NotPresent)
-			IRCConnection.SendMessageFormat("Waiting for {0} to be queued.", string.IsNullOrEmpty(commandToCall) ? "the next unnamed queued command" : commandToCall.StartsWith("!") ? "module " + commandToCall : "the command named “" + commandToCall + "”");
+			IRCConnection.SendMessageFormat("{0}のコールを待機しています。。", string.IsNullOrEmpty(commandToCall) ? "次の無名のキューコマンド" : commandToCall.StartsWith("!") ? "モジュール " + commandToCall : "コマンド「" + commandToCall + "」");
 		else
 			callWaiting = false;
 		if (response)
@@ -487,23 +487,23 @@ public class TwitchGame : MonoBehaviour
 		bool unnamed = string.IsNullOrEmpty(name);
 		if (response == CallResponse.AlreadyCalled)
 		{
-			IRCConnection.SendMessageFormat("@{0}, you already called!", user);
+			IRCConnection.SendMessageFormat("@{0}さん：すでにコールしています！", user);
 			return;
 		}
 		else if (response == CallResponse.NotEnoughCalls)
 		{
 			if (callChanged)
-				IRCConnection.SendMessageFormat("@{0}, your call has been updated to {1}.", user, unnamed ? "the next queued command" : name);
+				IRCConnection.SendMessageFormat("@{0}さん：コールが{1}に更新されました。", user, unnamed ? "次の無名のキューコマンド" : name);
 			GameCommands.CallCountCommand();
 			return;
 		}
 		else if (response == CallResponse.UncommonCalls)
 		{
 			if (callChanged)
-				IRCConnection.SendMessageFormat("@{0}, your call has been updated to {1}. Uncommon calls still present.", user, unnamed ? "the next queued command" : name);
+				IRCConnection.SendMessageFormat("@{0}さん：コールが{1}に更新されました。不自然なコールがまだ含まれています。", user, unnamed ? "次の無名のキューコマンド" : name);
 			else
 			{
-				IRCConnection.SendMessageFormat("Sorry, uncommon calls were made. Please either correct your call(s) or use “!callnow” followed by the correct command to call.");
+				IRCConnection.SendMessageFormat("申し訳ございません。不自然なコールが生成されました。コールを訂正するか、「!callnow」の後に正しいコマンドを使用してコールしてください。");
 				GameCommands.ListCalledPlayers();
 			}
 			return;
@@ -511,17 +511,17 @@ public class TwitchGame : MonoBehaviour
 		else if (response == CallResponse.DifferentName)
 		{
 			CommandQueueItem call = CommandQueue.Find(item => item.Message.Text.StartsWith(name));
-			IRCConnection.SendMessageFormat("@{0}, module {1} is queued with the name “{2}”, please use “!call {2}” to call it.", user, name, call.Name);
+			IRCConnection.SendMessageFormat("@{0}さん：モジュール「{1}」は「{2}」というコマンドがコールされる予定です。コールするには「!call {2}」を使用してください。", user, name, call.Name);
 			return;
 		}
 		else
 		{
 			unnamed = string.IsNullOrEmpty(commandToCall);
 			if (callWaiting)
-				IRCConnection.SendMessageFormat("Waiting for {0} to be queued.", unnamed ? "the next unnamed queued command" : commandToCall.StartsWith("!") ? "module " + commandToCall : "the command named “" + commandToCall + "”");
+				IRCConnection.SendMessageFormat("{0}のコールを待機しています。。", unnamed ? "次の無名のキューコマンド" : commandToCall.StartsWith("!") ? "モジュール " + commandToCall : "コマンド「" + commandToCall + "」");
 			else
 			{
-				IRCConnection.SendMessageFormat("No {0} in the queue. Calling {1} when it is queued.", unnamed ? "unnamed commands" : commandToCall.StartsWith("!") ? "command for module " + commandToCall : "command named “" + commandToCall + "”", unnamed ? "the next unnamed queued command" : commandToCall.StartsWith("!") ? "module " + commandToCall : "the command named “" + commandToCall + "”");
+				IRCConnection.SendMessageFormat("キューに{0}はありません。呼び出しがあり次第、{1}をコールします。", unnamed ? "無名のコマンド" : commandToCall.StartsWith("!") ? "モジュール「 " + commandToCall + "」のコマンド": "「" + commandToCall + "」というコマンド", unnamed ? "次の無名のキューコマンド" : commandToCall.StartsWith("!") ? "モジュール「" + commandToCall + "」": "「" + commandToCall + "というコマンド");
 				callWaiting = true;
 			}
 		}
@@ -792,7 +792,7 @@ public class TwitchGame : MonoBehaviour
 			{
 				if (alertSound != null)
 					alertSound.Play();
-				IRCConnection.SendMessageFormat("Warning: This bomb will be automatically detonated in {0} minute{1}.", TrainingModeRemainingTime.ToString(), TrainingModeRemainingTime == 1 ? "" : "s");
+				IRCConnection.SendMessageFormat("警告：この爆弾は、{0}分後に自動的に爆発します。", TrainingModeRemainingTime.ToString(), TrainingModeRemainingTime == 1 ? "" : "");
 			}
 			yield return new WaitForSecondsRealtime(60.0f);
 			TrainingModeRemainingTime--;

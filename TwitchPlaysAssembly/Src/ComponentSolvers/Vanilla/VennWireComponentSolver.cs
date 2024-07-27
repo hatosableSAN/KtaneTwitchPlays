@@ -10,7 +10,9 @@ public class VennWireComponentSolver : ComponentSolver
 		base(module)
 	{
 		_wires = ((VennWireComponent) module.BombComponent).ActiveWires;
-		ModInfo = ComponentSolverFactory.GetModuleInfo("Venn", "!{0} cut 3 [cut wire 3] | !{0} cut 2 3 6 [cut multiple wires] | Wires are ordered from left to right | Empty spaces are not counted");
+		ModInfo = ComponentSolverFactory.GetModuleInfo("Venn", "!{0} cut 3 [ワイヤ3を切る] | !{0} cut 2 3 6 [複数のワイヤを切る] | ワイヤは左から順に数える | ワイヤのないプラグは数えない");
+		ModInfo.moduleTranslatedName = "複雑ワイヤ";
+		ModInfo.manualCode = "https://ktane.timwi.de/HTML/Complicated%20Wires%20translated%20(%E6%97%A5%E6%9C%AC%E8%AA%9E%20%E2%80%94%20%E8%A4%87%E9%9B%91%E3%83%AF%E3%82%A4%E3%83%A4).html";
 	}
 
 	protected internal override IEnumerator RespondToCommandInternal(string inputCommand)

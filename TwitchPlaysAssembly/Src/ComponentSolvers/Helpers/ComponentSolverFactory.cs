@@ -195,9 +195,8 @@ public static class ComponentSolverFactory
 		ModComponentSolverCreators["WhosOnFirstTranslated"] = module => new TranslatedWhosOnFirstComponentSolver(module);
 		ModComponentSolverCreators["VentGasTranslated"] = module => new TranslatedNeedyVentComponentSolver(module);
 
-		// SHIMS
-		// These override at least one specific command or formatting, then pass on control to ProcessTwitchCommand in all other cases. (Or in some cases, enforce unsubmittable penalty)
-		ModComponentSolverCreators["simonServes"] = module => new SimonServesShim(module);
+		// 差分修正パッケージ(shims)
+		// これらは少なくとも1つの特定のコマンドや書式をオーバーライドし、それ以外の場合はProcessTwitchCommandに制御を渡す。(場合によっては、送信不能につきペナルティを強制する）。
 		ModComponentSolverCreators["BooleanKeypad"] = module => new BooleanKeypadShim(module);
 		ModComponentSolverCreators["Color Generator"] = module => new ColorGeneratorShim(module);
 		ModComponentSolverCreators["ExtendedPassword"] = module => new ExtendedPasswordComponentSolver(module);
@@ -288,15 +287,14 @@ public static class ComponentSolverFactory
 		ModComponentSolverCreators["KritLockpickMaze"] = module => new LockpickMazeShim(module);
 		ModComponentSolverCreators["simonSamples"] = module => new SimonSamplesShim(module);
 		ModComponentSolverCreators["DIWindow"] = module => new DriveInWindowShim(module);
-		ModComponentSolverCreators["AlienModule"] = module => new AlienFilingColorsShim(module);
-		ModComponentSolverCreators["double_on"] = module => new DoubleOnShim(module);
+		ModComponentSolverCreators["chip"] = module => new ChipShim(module);
 
 		// Anti-troll shims - These are specifically meant to allow the troll commands to be disabled.
-		ModComponentSolverCreators["MazeV2"] = module => new AntiTrollShim(module, new Dictionary<string, string> { { "spinme", "Sorry, I am not going to waste time spinning every single pipe 360 degrees." } });
-		ModComponentSolverCreators["danielDice"] = module => new AntiTrollShim(module, new Dictionary<string, string> { { "rdrts", "Sorry, the secret gambler's room is off limits to you." } });
+		ModComponentSolverCreators["MazeV2"] = module => new AntiTrollShim(module, new Dictionary<string, string> { { "spinme", "I am not going to waste time spinning every single pipe 360 degrees." } });
+		ModComponentSolverCreators["danielDice"] = module => new AntiTrollShim(module, new Dictionary<string, string> { { "rdrts", "the secret gambler's room is off limits to you." } });
 
-		//Module Information
-		//Information declared here will be used to generate ModuleInformation.json if it doesn't already exist, and will be overwritten by ModuleInformation.json if it does exist.
+		//モジュール情報
+		//ここで宣言された情報は、ModuleInformation.jsonが存在しなければ生成するのに使われ、それが存在すれば、ModuleInformation.jsonによって上書きされる。
 		/*
 		 * 
 			Typical ModuleInformation json entry
@@ -338,7 +336,7 @@ public static class ComponentSolverFactory
 		 * 
 		 */
 
-		//All of these modules are built into Twitch plays.
+		//TP本体に内蔵されているモジュール一覧
 
 		//Asimir
 		ModComponentSolverInformation["murder"] = new ModuleInformation { builtIntoTwitchPlays = true, moduleDisplayName = "Murder" };
@@ -571,6 +569,7 @@ public static class ComponentSolverFactory
 
 		//eXish
 		ModComponentSolverInformation["organizationModule"] = new ModuleInformation { CameraPinningAlwaysAllowed = true, announceModule = true };
+		ModComponentSolverInformation["timingIsEverything"] = new ModuleInformation { announceModule = true };
 		ModComponentSolverInformation["blinkstopModule"] = new ModuleInformation { statusLightPosition = StatusLightPosition.TopLeft };
 
 		//Flamanis
@@ -692,7 +691,7 @@ public static class ComponentSolverFactory
 
 		foreach (KeyValuePair<string, ModuleInformation> kvp in ModComponentSolverInformation)
 		{
-			ModComponentSolverInformation[kvp.Key].moduleID = kvp.Key;
+			ModComponentSolverInformation[kvp.Key].moduleID = kvp.Key;//上記のModComponentSolverInformationごとにデフォルト値として情報を設定
 			AddDefaultModuleInformation(kvp.Value);
 		}
 	}
@@ -741,16 +740,16 @@ public static class ComponentSolverFactory
 					continue;
 				}
 
-				// The Module ID has been determined, now parse the score.
+				// モジュールIDに対応するスコアの設定
 				var defaultInfo = GetDefaultInformation(moduleID);
 
 				rewardBonuses[moduleID] = rewardString;
 
-				// Catch any TDB modules which can't be parsed.
+				// TBDは設定しない
 				if (scoreString == "TBD")
 					continue;
 
-				// UN and T is for unchanged and temporary score which are read normally.
+				// UNとTは、変更されていないスコアと一時的なスコアのため、通常通り読み込まれる。
 				scoreString = Regex.Replace(scoreString, @"(?:UN )?(\d+)T?", "$1");
 
 				defaultInfo.scoreString = scoreString;
@@ -772,8 +771,6 @@ public static class ComponentSolverFactory
 		{
 			var defaultInfo = GetDefaultInformation(item.ModuleID);
 			defaultInfo.announceModule |= item.ModuleID.IsBossMod();
-			defaultInfo.announceModule |= item.ModuleID.ModHasQuirk("NeedsImmediateAttention");
-			defaultInfo.announceModule |= item.ModuleID.ModHasQuirk("PseudoNeedy");
 		}
 
 		if (reloadData)
@@ -793,6 +790,8 @@ public static class ComponentSolverFactory
 				helpText = info.helpText,
 				helpTextOverride = false,
 				moduleDisplayName = info.moduleDisplayName,
+                moduleTranslatedName = info.moduleTranslatedName,
+				moduleTranslatedAuthor = info.moduleTranslatedAuthor,
 				moduleID = info.moduleID,
 				scoreString = info.scoreString,
 				scoreStringOverride = false,
@@ -817,8 +816,8 @@ public static class ComponentSolverFactory
 	public static ModuleInformation GetDefaultInformation(string moduleType, bool addIfNotExist = true)
 	{
 		if (!DefaultModComponentSolverInformation.ContainsKey(moduleType) && addIfNotExist)
-			AddDefaultModuleInformation(new ModuleInformation { moduleID = moduleType });
-		else if (!DefaultModComponentSolverInformation.ContainsKey(moduleType))
+			AddDefaultModuleInformation(new ModuleInformation { moduleID = moduleType });//TP本体にない場合は作る
+		else if (!DefaultModComponentSolverInformation.ContainsKey(moduleType))//ここには基本来ない
 			return null;
 		return DefaultModComponentSolverInformation[moduleType];
 	}
@@ -913,6 +912,12 @@ public static class ComponentSolverFactory
 
 			if (!string.IsNullOrEmpty(info.moduleDisplayName))
 				i.moduleDisplayName = info.moduleDisplayName;
+
+            if (!string.IsNullOrEmpty(info.moduleTranslatedName))
+				i.moduleTranslatedName = info.moduleTranslatedName;
+
+		    if (!string.IsNullOrEmpty(info.moduleTranslatedAuthor))
+				i.moduleTranslatedAuthor = info.moduleTranslatedAuthor;
 
 			if (!string.IsNullOrEmpty(info.helpText) || info.helpTextOverride)
 				i.helpText = info.helpText;

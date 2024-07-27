@@ -6,32 +6,32 @@ using Assets.Scripts.BombBinder;
 using Assets.Scripts.Missions;
 using UnityEngine;
 
-/// <summary>Commands that can be used in the bomb binder.</summary>
+/// <summary>ミッションバインダー関連のコマンド</summary>
 /// <prefix>binder </prefix>
 public static class MissionBinderCommands
 {
 	#region Binder Commands
 	/// <name>Select</name>
 	/// <syntax>select</syntax>
-	/// <summary>Selects the currently highlighted item.</summary>
+	/// <summary>現在選択中のアイテムを選ぶ。</summary>
 	[Command(@"select")]
 	public static IEnumerator Select(FloatingHoldable holdable) => SelectOnPage(holdable);
 
 	/// <name>Select Index</name>
 	/// <syntax>select [index]</syntax>
-	/// <summary>Selects an item based on it's index on the page.</summary>
+	/// <summary>メニュー内の上からindex番目のアイテムを選ぶ。</summary>
 	[Command(@"select +(\d+)")]
 	public static IEnumerator SelectIndex(FloatingHoldable holdable, [Group(1)] int index) => SelectOnPage(holdable, index: index);
 
 	/// <name>Select Text</name>
 	/// <syntax>select [text]</syntax>
-	/// <summary>Selects an item based on it's text (subsection or name).</summary>
+	/// <summary>特定のテキストのアイテムを選択する(サブセクションまたは名前)</summary>
 	[Command(@"select +(?!\d+$)(.+)")]
 	public static IEnumerator SelectSearch(FloatingHoldable holdable, [Group(1)] string search) => SelectOnPage(holdable, search: search.Split(new[] { ' ', ',', ';' }, StringSplitOptions.RemoveEmptyEntries));
 
 	/// <name>Up / Down</name>
 	/// <syntax>up (amount)\ndown (amount)</syntax>
-	/// <summary>Moves up or down the page by a number items.</summary>
+	/// <summary>特定の回数バインダー内を上下に移動する。</summary>
 	[Command(@"(up|u|down|d)(?: (\d+))?")]
 	public static IEnumerator Navigate([Group(1)] string direction, [Group(2)] int? optAmount)
 	{
@@ -46,7 +46,7 @@ public static class MissionBinderCommands
 
 	/// <name>Search</name>
 	/// <syntax>search [query]</syntax>
-	/// <summary>Searches the binder for a mission.</summary>
+	/// <summary>バインダーからミッションを探す。</summary>
 	[Command("(?:search|s|find|f) (.+)")]
 	public static IEnumerator Search(FloatingHoldable holdable, [Group(1)] string query)
 	{
@@ -59,7 +59,7 @@ public static class MissionBinderCommands
 		switch (possibleMissions.Count())
 		{
 			case 0:
-				IRCConnection.SendMessage($"There are no missions that match \"{query}\".");
+				IRCConnection.SendMessage($"「{query}」と一致するミッションはありません。");
 				break;
 			case 1:
 				var missionID = possibleMissions.First().ID;
@@ -70,7 +70,7 @@ public static class MissionBinderCommands
 				yield return null;
 				break;
 			default:
-				IRCConnection.SendMessage($"{possibleMissions.Count()} missions match \"{query}\", displaying matching missions in the binder.");
+				IRCConnection.SendMessage($"{possibleMissions.Count()}つのミッションが「{query}」と一致しました。一致したミッションをバインダーに表示します。");
 
 				var tableOfContentsList = pageManager.GetValue<List<MissionTableOfContents>>("tableOfContentsList");
 
@@ -213,7 +213,7 @@ public static class MissionBinderCommands
 		if (selectedMission != null && MissionManager.Instance.GetMission(selectedMission.MissionID).IsTutorial)
 		{
 			Audio.PlaySound(KMSoundOverride.SoundEffect.Strike, _currentSelectable.transform);
-			IRCConnection.SendMessage("The tutorial missions are currently unsupported and cannot be selected.");
+			IRCConnection.SendMessage("チュートリアルミッションは現在サポートされていないため、選択できません。");
 			yield break;
 		}
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Assets.Scripts.Props;
+using TwitchPlaysAssembly.Src.Helpers;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -86,7 +87,7 @@ public class TwitchPlaysService : MonoBehaviour
 		Leaderboard.Instance.LoadDataFromFile();
 		LeaderboardController.Install();
 
-		ModuleData.LoadDataFromFile();
+		ModuleData.LoadDataFromFile();//moduleinformation.jsonの読み込み
 		ModuleData.WriteDataToFile();
 
 		AuditLog.SetupLog();
@@ -259,15 +260,15 @@ public class TwitchPlaysService : MonoBehaviour
 		OtherModes.RefreshModes(state);
 
 		// Automatically check for updates after a round is finished or when entering the setup state but never more than once per hour.
-		bool hourPassed = DateTime.Now.Subtract(Updater.LastCheck).TotalHours >= 1;
-		if ((state == KMGameInfo.State.PostGame || state == KMGameInfo.State.Setup) && hourPassed && !Updater.UpdateAvailable)
-		{
-			_coroutinesToStart.Enqueue(Updater.CheckForUpdates().Yield(() =>
-			{
-				if (Updater.UpdateAvailable)
-					IRCConnection.SendMessage("There is a new update to Twitch Plays!");
-			}));
-		}
+		// bool hourPassed = DateTime.Now.Subtract(Updater.LastCheck).TotalHours >= 1;
+		// if ((state == KMGameInfo.State.PostGame || state == KMGameInfo.State.Setup) && hourPassed && !Updater.UpdateAvailable)
+		// {
+		// 	_coroutinesToStart.Enqueue(Updater.CheckForUpdates().Yield(() =>
+		// 	{
+		// 		if (Updater.UpdateAvailable)
+		// 			IRCConnection.SendMessage("There is a new update to Twitch Plays!");
+		// 	}));
+		// } //アップデートの確認機能
 
 		switch (state)
 		{
@@ -287,6 +288,7 @@ public class TwitchPlaysService : MonoBehaviour
 					initialLoad = true;
 					_coroutinesToStart.Enqueue(ComponentSolverFactory.LoadDefaultInformation(true));
 					_coroutinesToStart.Enqueue(Repository.LoadData());
+					_coroutinesToStart.Enqueue(TranslationInfo.TranslateComponents());
 					if (TwitchPlaySettings.data.TestModuleCompatibility && !TwitchPlaySettings.data.TwitchPlaysDebugEnabled)
 						_coroutinesToStart.Enqueue(CheckSupport.FindSupportedModules());
 					if (TwitchPlaySettings.data.EnableAutoProfiles)
@@ -485,7 +487,7 @@ public class TwitchPlaysService : MonoBehaviour
 					return;
 
 		if (TwitchPlaySettings.data.ShowUnrecognizedCommandError)
-			IRCConnection.SendMessage("@{0}, I don’t recognize that command.", msg.UserNickName, !msg.IsWhisper, msg.UserNickName);
+			IRCConnection.SendMessage("@{0}さん：そのコマンドを認識できません。", msg.UserNickName, !msg.IsWhisper, msg.UserNickName);
 	}
 
 	private bool AttemptInvokeCommand<TObj>(StaticCommand command, IRCMessage msg, string cmdStr, Match m, TObj extraObject)
@@ -499,10 +501,10 @@ public class TwitchPlaysService : MonoBehaviour
 
 		if (!UserAccess.HasAccess(msg.UserNickName, TwitchPlaySettings.data.AnarchyMode ? command.Attr.AccessLevelAnarchy : command.Attr.AccessLevel, orHigher: true))
 		{
-			IRCConnection.SendMessageFormat("@{0}, you need {1} access to use that command{2}.",
+			IRCConnection.SendMessageFormat("@{0}さん：{2}そのコマンドの使用には「{1}」権限が必要です。",
 				msg.UserNickName,
 				UserAccess.LevelToString(TwitchPlaySettings.data.AnarchyMode ? command.Attr.AccessLevelAnarchy : command.Attr.AccessLevel),
-				TwitchPlaySettings.data.AnarchyMode ? " in anarchy mode" : "");
+				TwitchPlaySettings.data.AnarchyMode ? "アナーキーモード中、" : "");
 			// Return true so that the command counts as processed
 			return true;
 		}
@@ -518,7 +520,7 @@ public class TwitchPlaysService : MonoBehaviour
 
 			if (mdl.Hidden)
 			{
-				IRCConnection.SendMessage($"Module {mdl.Code} is currently hidden and cannot be interacted with.");
+				IRCConnection.SendMessage($"モジュール{mdl.Code}は隠れているため、操作できません。");
 				return true;
 			}
 		}
@@ -531,7 +533,7 @@ public class TwitchPlaysService : MonoBehaviour
 			)
 		)
 		{
-			IRCConnection.SendMessage("That holdable is currently disabled and cannot be interacted with.");
+			IRCConnection.SendMessage("その持ち上げ可能物は現在無効になっているため、操作できません。");
 			return true;
 		}
 
@@ -540,10 +542,10 @@ public class TwitchPlaysService : MonoBehaviour
 		{
 			if (TwitchPlaySettings.data.AutoSetVSModeTeams)
 			{
-				if (TwitchPlaySettings.data.VSModePlayerLockout) IRCConnection.SendMessage($@"{msg.UserNickName}, you have not joined a team, and the bomb has already started. Use !join to play the next bomb.");
-				else IRCConnection.SendMessage($@"{msg.UserNickName}, you have not joined a team, and cannot solve modules in this mode until you do, please use !join to be assigned a team.");
+				if (TwitchPlaySettings.data.VSModePlayerLockout) IRCConnection.SendMessage($@"{msg.UserNickName}さん：あなたはまだチームに参加していません。次の爆弾から参加するには、「!join」を入力してください。");
+				else IRCConnection.SendMessage($@"{msg.UserNickName}さん：あなたはまだチームに参加していません。このモードではチームに参加するまでモジュールを解除できないため、「!join」を使用してチームに所属してください。");
 			}
-			else IRCConnection.SendMessage($@"{msg.UserNickName}, you have not joined a team, and cannot solve modules in this mode until you do, please use !join evil or !join good.");
+			else IRCConnection.SendMessage($@"{msg.UserNickName}さん：あなたはまだチームに参加していません。このモードではチームに参加するまでモジュールを解除できないため、「!join white」または「!join red」を使用してチームに所属してください。");
 			// Return true so that the command counts as processed (otherwise you get the above message multiple times)
 			return true;
 		}
@@ -558,7 +560,7 @@ public class TwitchPlaysService : MonoBehaviour
 		{
 			if (double.IsPositiveInfinity(ban.BanExpiry))
 			{
-				IRCConnection.SendMessage($"Sorry @{msg.UserNickName}, You were restricted from using commands. You can request permission to send commands again by talking to the staff.", msg.UserNickName, !msg.IsWhisper);
+				IRCConnection.SendMessage($"@{msg.UserNickName}さん：現在コマンドの使用が制限されています。モデレーターと相談の上、コマンドの使用許可を得てください。", msg.UserNickName, !msg.IsWhisper);
 			}
 			else
 			{
@@ -567,12 +569,12 @@ public class TwitchPlaysService : MonoBehaviour
 				int daysRemaining = secondsRemaining / 86400; secondsRemaining %= 86400;
 				int hoursRemaining = secondsRemaining / 3600; secondsRemaining %= 3600;
 				int minutesRemaining = secondsRemaining / 60; secondsRemaining %= 60;
-				string timeRemaining = $"{secondsRemaining} seconds.";
-				if (daysRemaining > 0) timeRemaining = $"{daysRemaining} days, {hoursRemaining} hours, {minutesRemaining} minutes, {secondsRemaining} seconds.";
-				else if (hoursRemaining > 0) timeRemaining = $"{hoursRemaining} hours, {minutesRemaining} minutes, {secondsRemaining} seconds.";
-				else if (minutesRemaining > 0) timeRemaining = $"{minutesRemaining} minutes, {secondsRemaining} seconds.";
+				string timeRemaining = $"{secondsRemaining}秒";
+				if (daysRemaining > 0) timeRemaining = $"{daysRemaining}日と{hoursRemaining}時間{minutesRemaining}分{secondsRemaining}秒";
+				else if (hoursRemaining > 0) timeRemaining = $"{hoursRemaining}時間{minutesRemaining}分{secondsRemaining}秒";
+				else if (minutesRemaining > 0) timeRemaining = $"{minutesRemaining}分{secondsRemaining}秒";
 
-				IRCConnection.SendMessage($"Sorry @{msg.UserNickName}, You were temporarily restricted from using commands. You can participate again in {timeRemaining} or request permission by talking to the staff.", msg.UserNickName, !msg.IsWhisper);
+				IRCConnection.SendMessage($"@{msg.UserNickName}さん：現在コマンドの使用が一時的に制限されています。{timeRemaining}後に参加できるようになります。制限解除を求める場合、モデレーターにご連絡ください。", msg.UserNickName, !msg.IsWhisper);
 			}
 			return true;
 		}
@@ -602,7 +604,7 @@ public class TwitchPlaysService : MonoBehaviour
 					}
 					if (isNullable)
 						return NumberParseResult.Success;
-					IRCConnection.SendMessage(group.Success ? "@{0}, “{1}” is not a valid number." : "@{0}, the command could not be parsed.", msg.UserNickName, !msg.IsWhisper, msg.UserNickName, group.Success ? group.Value : null);
+					IRCConnection.SendMessage(group.Success ? "@{0}さん：「{1}」は無効な数です。" : "@{0}さん：コマンドの解析に失敗しました。", msg.UserNickName, !msg.IsWhisper, msg.UserNickName, group.Success ? group.Value : null);
 					return NumberParseResult.Error;
 				}
 
@@ -648,7 +650,7 @@ public class TwitchPlaysService : MonoBehaviour
 				arguments[i] = parameters[i].DefaultValue;
 			else
 			{
-				IRCConnection.SendMessage("@{0}, this is a bug; please notify the devs. Error: the “{1}” command has an unrecognized parameter “{2}”. It expects a type of “{3}”, and the extraObject is of type “{4}”.", msg.UserNickName, !msg.IsWhisper, msg.UserNickName, command.Method.Name, parameters[i].Name, parameters[i].ParameterType.Name, extraObject?.GetType().Name);
+				IRCConnection.SendMessage("@{0}さん：これはバグです。開発者にご連絡ください。エラー：コマンド「{1}」には認識できないパラメータ「(2)」が含まれています。型は「{3}」である必要がありますが、型「{4}」のデータです。", msg.UserNickName, !msg.IsWhisper, msg.UserNickName, command.Method.Name, parameters[i].Name, parameters[i].ParameterType.Name, extraObject?.GetType().Name);
 				return true;
 			}
 		}
@@ -659,7 +661,7 @@ public class TwitchPlaysService : MonoBehaviour
 		else if (invokeResult is IEnumerator coroutine)
 			ProcessCommandCoroutine(coroutine, extraObject);
 		else if (invokeResult != null)
-			IRCConnection.SendMessage("@{0}, this is a bug; please notify the devs. Error: the “{1}” command returned something unrecognized.", msg.UserNickName, !msg.IsWhisper, msg.UserNickName, command.Method.Name);
+			IRCConnection.SendMessage("@{0}さん：これはバグです。開発者にご連絡ください。エラー：コマンド「{1}」は、認識できない値を返しました。", msg.UserNickName, !msg.IsWhisper, msg.UserNickName, command.Method.Name);
 
 		if ((TwitchPlaySettings.data.AnarchyMode ? command.Attr.AccessLevelAnarchy : command.Attr.AccessLevel) > AccessLevel.Defuser)
 			AuditLog.Log(msg.UserNickName, UserAccess.HighestAccessLevel(msg.UserNickName), msg.Text);

@@ -160,7 +160,7 @@ public class LogUploader : MonoBehaviour
 		}
 	}
 
-	public static void PostToChat(string analysisUrl, string format = "Analysis for this bomb: {0}", string emote = "copyThis") =>
+	public static void PostToChat(string analysisUrl, string format = "この爆弾の解析ログ: {0}", string emote = "copyThis") =>
 		IRCConnection.SendMessageFormat($"{emote} {format}", analysisUrl);
 
 	public void GetBombUrl()

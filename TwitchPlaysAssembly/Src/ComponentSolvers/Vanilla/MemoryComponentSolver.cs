@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using Assets.Scripts.Rules;
 
@@ -8,7 +8,9 @@ public class MemoryComponentSolver : ComponentSolver
 		base(module)
 	{
 		_buttons = ((MemoryComponent) module.BombComponent).Buttons;
-		ModInfo = ComponentSolverFactory.GetModuleInfo("Memory", "!{0} position 2, !{0} pos 2, !{0} p 2 [2nd position] | !{0} label 3, !{0} lab 3, !{0} l 3 [label 3]");
+		ModInfo = ComponentSolverFactory.GetModuleInfo("Memory", "!{0} position 2, !{0} pos 2, !{0} p 2 [二番目のボタンを押す] | !{0} label 3, !{0} lab 3, !{0} l 3 [3と書かれたボタンを押す]");
+		ModInfo.moduleTranslatedName = "記憶";
+		ModInfo.manualCode = "https://ktane.timwi.de/HTML/Memory%20translated%20(%E6%97%A5%E6%9C%AC%E8%AA%9E%20%E2%80%94%20%E8%A8%98%E6%86%B6).html";
 	}
 
 	protected internal override IEnumerator RespondToCommandInternal(string inputCommand)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -128,13 +129,13 @@ public static class CheckSupport
 		if (supportStatus.Values.Count(status => status) > 0)
 		{
 			var supportedList = supportStatus.Where(pair => pair.Value).Select(pair => pair.Key).Join(", ");
-			IRCConnection.SendMessage($"These modules have TP support: {supportedList}");
-			alertText.text = $"These modules have TP support: {supportedList}";
+			IRCConnection.SendMessage($"以下のモジュールがTPに対応しました：{supportedList}");
+			alertText.text = $"以下のモジュールがTPに対応しました：{supportedList}";
 			yield return new WaitForSeconds(4);
 		}
 		else
 		{
-			alertText.text = "Support checks passed successfully!";
+			alertText.text = "サポートチェックが完了しました！";
 			yield return new WaitForSeconds(2);
 		}
 
@@ -179,7 +180,7 @@ public static class CheckSupport
 
 		foreach (var component in validLocalMods)
 		{
-			alertText.text = $"Testing compatibility of:\n\"{component.GetModuleDisplayName()}\"";
+			alertText.text = $"互換性チェック中：\n\"{component.GetModuleDisplayName()}\"";
 			alertProgressBar.localScale = new Vector3((float) progress / total, 1, 1);
 
 			yield return component;
@@ -196,7 +197,7 @@ public static class CheckSupport
 		foreach (var module in validModules)
 		{
 			DebugHelper.Log($"Loading module \"{module.Name}\" to test compatibility...");
-			alertText.text = $"Testing compatibility of:\n\"{module.Name}\"";
+			alertText.text = $"互換性チェック中：\n\"{module.Name}\"";
 			alertProgressBar.localScale = new Vector3((float) progress / total, 1, 1);
 
 			var modPath = Path.Combine(modWorkshopPath, module.SteamID);

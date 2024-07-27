@@ -9,7 +9,9 @@ public class SimonComponentSolver : ComponentSolver
 		base(module)
 	{
 		_buttons = ((SimonComponent) module.BombComponent).buttons;
-		ModInfo = ComponentSolverFactory.GetModuleInfo("Simon", "!{0} press red green blue yellow, !{0} press rgby [press a sequence of colours] | You must include the input from any previous stages");
+		ModInfo = ComponentSolverFactory.GetModuleInfo("Simon", "!{0} press red green blue yellow, !{0} press rgby [その色のボタンを押す。R=赤、G=緑、B=青、Y=黄] | それまでのステージの入力も行わなければならない。");
+		ModInfo.moduleTranslatedName = "サイモンゲーム";
+		ModInfo.manualCode = "https://ktane.timwi.de/HTML/Simon%20Says%20translated%20(%E6%97%A5%E6%9C%AC%E8%AA%9E%20%E2%80%94%20%E3%82%B5%E3%82%A4%E3%83%A2%E3%83%B3%E3%82%B2%E3%83%BC%E3%83%A0).html";
 	}
 
 	protected internal override IEnumerator RespondToCommandInternal(string inputCommand)

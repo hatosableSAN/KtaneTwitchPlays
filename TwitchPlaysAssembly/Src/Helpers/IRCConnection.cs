@@ -266,7 +266,7 @@ public class IRCConnection : MonoBehaviour
 	{
 		UnityEngine.Debug.Log(text);
 		UnityEngine.Debug.LogException(ex);
-		IRCConnectionManagerHoldable.IRCTextToDisplay.AddRange($"{text}\n{ex.Message}\nSee output_log.txt for stack trace".Wrap(60).Split(new[] { "\n" }, StringSplitOptions.None));
+		IRCConnectionManagerHoldable.IRCTextToDisplay.AddRange($"{text}\n{ex.Message}\n詳細は、output_log.txtを参照ください。".Wrap(60).Split(new[] { "\n" }, StringSplitOptions.None));
 	}
 
 	private static void AddTextToHoldable(string text, params object[] args)
@@ -304,7 +304,7 @@ public class IRCConnection : MonoBehaviour
 		Text alertText = ConnectionAlert.transform.Find("Text").GetComponent<Text>();
 		Transform alertProgressBar = ConnectionAlert.transform.Find("ProgressBar");
 
-		AddTextToHoldable("[IRC:Connect] Connecting to IRC");
+		AddTextToHoldable("[IRC:Connect] Twitchチャットに接続中");
 		Stopwatch stopwatch = new Stopwatch();
 		while (true)
 		{
@@ -319,19 +319,19 @@ public class IRCConnection : MonoBehaviour
 				double delay = connectionRetries == 0 ? 100 : Math.Pow(2, connectionRetries - 1) * 1000;
 				while (stopwatch.ElapsedMilliseconds < delay)
 				{
-					alertText.text = $"The bot is currently disconnected. Attempting to connect in {(delay - stopwatch.ElapsedMilliseconds) / 1000f:N1}";
+					alertText.text = $"ボットは現在接続されていません。{(delay - stopwatch.ElapsedMilliseconds) / 1000f:N1}秒後に再接続を試みます。";
 					alertProgressBar.localScale = new Vector3(1 - stopwatch.ElapsedMilliseconds / (float) delay, 1, 1);
 
 					yield return null;
 					if (_state != IRCConnectionState.DoNotRetry) continue;
 					_state = IRCConnectionState.Disconnected;
-					AddTextToHoldable("\nCancelled connection retry attempt");
+					AddTextToHoldable("\n接続の再試行がキャンセルされました。");
 					ConnectionAlert.SetActive(false);
 					yield break;
 				}
 				stopwatch.Reset();
 
-				alertText.text = "Connecting...";
+				alertText.text = "接続中...";
 				alertProgressBar.localScale = new Vector3(0, 1, 1);
 
 				connectionRetries++;
@@ -352,20 +352,20 @@ public class IRCConnection : MonoBehaviour
 				{
 					case IRCConnectionState.DoNotRetry:
 						_state = IRCConnectionState.Disconnected;
-						AddTextToHoldable("[IRC:Connect] Aborted.");
+						AddTextToHoldable("[IRC:Connect]中止");
 
-						alertText.text = "Unable to connect, aborting retry attempts.";
+						alertText.text = "接続できません。再接続を中止します。";
 						yield return new WaitForSeconds(1);
 						ConnectionAlert.SetActive(false);
 
 						yield break;
 					case IRCConnectionState.Connected:
-						AddTextToHoldable("[IRC:Connect] Successful.");
-						SendMessage("Welcome to Twitch Plays: Keep Talking and Nobody Explodes!");
+						AddTextToHoldable("[IRC:Connect]成功");
+						SendMessage("「Keep Talking and Nobody Explodes」Twitch Playsへようこそ!");
 						break;
 					default:
 						_state = IRCConnectionState.Retrying;
-						AddTextToHoldable($"[IRC:Connect] Failed - Retrying in {Math.Pow(2, connectionRetries - 1)} seconds.");
+						AddTextToHoldable($"[IRC:Connect]失敗 - {Math.Pow(2, connectionRetries - 1)}秒後に再接続します。");
 						break;
 				}
 			}
@@ -381,10 +381,10 @@ public class IRCConnection : MonoBehaviour
 					_state = IRCConnectionState.Disconnected;
 					yield break;
 				case IRCConnectionState.Disconnecting:
-					AddTextToHoldable("[IRC:Disconnect] Disconnecting from chat IRC.");
+					AddTextToHoldable("[IRC:Disconnect]チャットから切断します。");
 					yield break;
 				default:
-					AddTextToHoldable("[IRC:Connect] Trying to reconnect.");
+					AddTextToHoldable("[IRC:Connect]再接続中です。");
 					break;
 			}
 		}
@@ -404,16 +404,16 @@ public class IRCConnection : MonoBehaviour
 		}
 		if (!File.Exists(Instance._ircConnectionSettings.SettingsPath))
 		{
-			AddTextToHoldable("The settings file does not exist. Trying to create it now.");
+			AddTextToHoldable("設定ファイルが存在しません。作成します。");
 			SetDebugUsername(true);
 			try
 			{
 				File.WriteAllText(Instance._ircConnectionSettings.SettingsPath, JsonConvert.SerializeObject(new TwitchPlaysService.ModSettingsJSON(), Formatting.Indented));
-				AddTextToHoldable("Settings file successfully created. Configure it now. Open up the Mod manager holdable, and select Open mod settins folder.");
+				AddTextToHoldable("設定ファイルが作成されました。\n設定を実施してください。\nパンフレットを開き、Mod設定フォルダを開き「MOD設定フォルダを開く」を選択してください。");
 			}
 			catch (Exception ex)
 			{
-				AddTextToHoldable(ex, "Settings file did not exist and could not be created:");
+				AddTextToHoldable(ex, "設定ファイルが存在しませんでしたが、作成できませんでした。");
 			}
 			return;
 		}
@@ -425,7 +425,7 @@ public class IRCConnection : MonoBehaviour
 			if (settings == null)
 			{
 				SetDebugUsername(true);
-				AddTextToHoldable("[IRC:Connect] Failed to read connection settings from mod settings.");
+				AddTextToHoldable("[IRC:Connect] MOD設定から接続設定を読み込むことができませんでした。");
 				return;
 			}
 
@@ -441,26 +441,26 @@ public class IRCConnection : MonoBehaviour
 			if (!IsAuthTokenValid(settings.authToken) || !IsUsernameValid(settings.channelName) || !IsUsernameValid(settings.userName) || string.IsNullOrEmpty(settings.serverName) || settings.serverPort < 1 || settings.serverPort > 65535)
 			{
 				SetDebugUsername(true);
-				AddTextToHoldable("[IRC:Connect] Your settings file is not configured correctly.\nThe following items need to be configured:\n");
+				AddTextToHoldable("[IRC:Connect] 設定ファイルの構成が間違っています。\n以下の要素を設定してください。\n");
 				if (!IsAuthTokenValid(settings.authToken))
 					AddTextToHoldable(
-						"AuthToken - Be sure oauth: is included.\n-   Retrieve from https://twitchapps.com/tmi/");
+						"・AuthToken - 「oauth:」も含めること。\n- https://twitchapps.com/tmi/ から取得。");
 				if (!IsUsernameValid(settings.userName))
 					AddTextToHoldable("userName");
 				if (!IsUsernameValid(settings.channelName))
 					AddTextToHoldable("channelName");
 				if (string.IsNullOrEmpty(settings.serverName))
-					AddTextToHoldable("serverName - Most likely to be irc.chat.twitch.tv");
+					AddTextToHoldable("serverName - irc.chat.twitch.tvを推奨。");
 				if (settings.serverPort < 1 || settings.serverPort > 65535)
-					AddTextToHoldable("serverPort - Most likely to be 6697");
-				AddTextToHoldable("\nOpen up the Mod manager holdable, and select \"open mod settings folder\".");
+					AddTextToHoldable("serverPort - 6697を推奨。");
+				AddTextToHoldable("\nパンフレットを開き、「MOD設定フォルダを開く」を選択してください。");
 				return;
 			}
 		}
 		catch (Exception ex)
 		{
 			SetDebugUsername(true);
-			AddTextToHoldable(ex, "[IRC:Connect] Failed to read connection settings from mod settings due to an exception:");
+			AddTextToHoldable(ex, "[IRC:Connect] 例外が発生したため、MOD設定から接続設定を読み込むことができませんでした。");
 			return;
 		}
 
@@ -538,24 +538,24 @@ public class IRCConnection : MonoBehaviour
 		_state = IRCConnectionState.Connecting;
 		try
 		{
-			AddTextToHoldable("[IRC:Connect] Starting connection to chat IRC {0}:{1}...", _settings.serverName, _settings.serverPort);
+			AddTextToHoldable("[IRC:Connect] チャット{0}:{1}に接続します...。", _settings.serverName, _settings.serverPort);
 
 			TcpClient sock = new TcpClient();
 			sock.Connect(_settings.serverName, _settings.serverPort);
 			if (!sock.Connected)
 			{
 				SetDebugUsername(true);
-				AddTextToHoldable("[IRC:Connect] Failed to connect to chat IRC {0}:{1}.", _settings.serverName, _settings.serverPort);
+				AddTextToHoldable("[IRC:Connect] チャット{0}:{1}に接続できませんでした。", _settings.serverName, _settings.serverPort);
 				return;
 			}
 
-			AddTextToHoldable("[IRC:Connect] Connection to chat IRC successful.");
+			AddTextToHoldable("[IRC:Connect] チャットに接続しました。");
 
 			NetworkStream networkStream = sock.GetStream();
 
 			try
 			{
-				AddTextToHoldable("[IRC:Connect] Attempting to set up SSL connection.");
+				AddTextToHoldable("[IRC:Connect] SSL接続のセットアップを試みています。");
 				SecureRandom secureRandom = new SecureRandom();
 				TlsClientProtocol protocol = new TlsClientProtocol(networkStream, secureRandom);
 				TPTlsClient tlsClient = new TPTlsClient();
@@ -579,14 +579,14 @@ public class IRCConnection : MonoBehaviour
 				_outputThread = new Thread(() => OutputThreadMethod(outputStream));
 				_outputThread.Start();
 
-				AddTextToHoldable("[IRC:Connect] SSL setup completed with no errors. Using {0}", tlsClient.ClientVersion);
+				AddTextToHoldable("[IRC:Connect] SSL接続のセットアップがエラー無しで完了しました。{0}を使用中です。", tlsClient.ClientVersion);
 			}
 			catch (Exception ex)
 			{
-				AddTextToHoldable("[IRC:Connect] SSL connection failed, defaulting to insecure connection.");
+				AddTextToHoldable("[IRC:Connect] SSL接続に失敗し、安全ではない接続がデフォルトになりました。");
 				if (_settings.serverPort == 6667)
-					AddTextToHoldable("[IRC:Connect] The configured port does not use SSL, please change it to 6697 if you wish to use SSL.");
-				DebugHelper.LogException(ex, "An Exception has occurred when attempting to connect using SSL, using insecure stream instead:");
+					AddTextToHoldable("[IRC:Connect] 指定したポートはSSL接続を使用していません。SSL接続を使用する場合、6697番ポートに変更してください。");
+				DebugHelper.LogException(ex, "SSL接続時に例外が発生しました。安全ではない接続を使用します。");
 				_settings.serverPort = 6667;
 				sock = new TcpClient(_settings.serverName, _settings.serverPort);
 				networkStream = sock.GetStream();
@@ -618,7 +618,7 @@ public class IRCConnection : MonoBehaviour
 				// If it takes more than a few seconds for Twitch to authenticate us, something probably went wrong.
 				if (Time.time - startTime >= 3)
 				{
-					AddTextToHoldable("[IRC:Connect] Authentication timed out.");
+					AddTextToHoldable("[IRC:Connect] 認証がタイムアウトしました。");
 					return;
 				}
 
@@ -627,7 +627,7 @@ public class IRCConnection : MonoBehaviour
 		}
 		catch (SocketException ex)
 		{
-			AddTextToHoldable($"[IRC:Connect] Failed to connect to chat IRC {_settings.serverName}:{_settings.serverPort}. Due to the following Socket Exception: {ex.SocketErrorCode} - {ex.Message}");
+			AddTextToHoldable($"[IRC:Connect] チャット{_settings.serverName}:{_settings.serverPort}の接続に失敗しました。以下のソケットに例外が発生しています。{ex.SocketErrorCode} - {ex.Message}");
 			// ReSharper disable once SwitchStatementMissingSomeCases
 			switch (ex.SocketErrorCode)
 			{
@@ -644,7 +644,7 @@ public class IRCConnection : MonoBehaviour
 		catch (Exception ex)
 		{
 			_state = IRCConnectionState.DoNotRetry;
-			AddTextToHoldable(ex, $"[IRC:Connect] Failed to connect to chat IRC {_settings.serverName}:{_settings.serverPort}. Due to the following Exception:");
+			AddTextToHoldable(ex, $"[IRC:Connect] チャット{_settings.serverName}:{_settings.serverPort}の接続に失敗しました。以下の例外が発生しています。");
 		}
 	}
 
@@ -666,7 +666,7 @@ public class IRCConnection : MonoBehaviour
 				Instance._state = IRCConnectionState.Disconnecting;
 				break;
 			case IRCConnectionState.Disabled:
-				AddTextToHoldable("[IRC:Connect] Twitch Plays is currently disabled.");
+				AddTextToHoldable("[IRC:Connect] Twitch Playsは現在無効化されています。");
 				break;
 			default:
 				Instance._state = IRCConnectionState.Disconnected;
@@ -694,16 +694,15 @@ public class IRCConnection : MonoBehaviour
 		sendToChat |= !IsUsernameValid(userNickName) || !TwitchPlaySettings.data.EnableWhispers || userNickName == Instance.UserNickName;
 		foreach (string line in message.Wrap(MaxMessageLength).Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries))
 		{
-			bool command = line.StartsWith(".") || line.StartsWith("/");
 			if (!Instance._silenceMode && Instance._state != IRCConnectionState.Disconnected)
 				Instance.SendCommand(sendToChat
-					? $"PRIVMSG #{Instance._settings.channelName} :{(command ? " " : "")}{line}"
+					? $"PRIVMSG #{Instance._settings.channelName} :{line}"
 					: $"PRIVMSG #{Instance._settings.channelName} :.w {userNickName} {line}");
 
 			var ircMessage = new IRCMessage(Instance.UserNickName, Instance.CurrentColor, line, !sendToChat, true);
 			TwitchPlaysService.Instance.AddMessage(ircMessage);
 
-			if (command) continue;
+			if (line.StartsWith(".") || line.StartsWith("/")) continue;
 			lock (Instance._receiveQueue)
 			{
 				Instance._receiveQueue.Enqueue(ircMessage);
@@ -725,17 +724,17 @@ public class IRCConnection : MonoBehaviour
 		if (Instance == null) return;
 		if (!Instance._silenceMode)
 		{
-			Instance.SendCommand($"PRIVMSG #{Instance._settings.channelName} :Silence mode on.");
+			Instance.SendCommand($"PRIVMSG #{Instance._settings.channelName} :サイレントモードがオンです。");
 			lock (Instance._receiveQueue)
 				Instance._receiveQueue.Enqueue(new IRCMessage(Instance.UserNickName, Instance.CurrentColor,
-					"Silence mode on.", false, true));
+					"サイレントモードがオンです。", false, true));
 		}
 		Instance._silenceMode = !Instance._silenceMode;
 		if (Instance._silenceMode) return;
-		Instance.SendCommand($"PRIVMSG #{Instance._settings.channelName} :Silence mode off.");
+		Instance.SendCommand($"PRIVMSG #{Instance._settings.channelName} :サイレントモードがオフです。");
 		lock (Instance._receiveQueue)
 			Instance._receiveQueue.Enqueue(new IRCMessage(Instance.UserNickName, Instance.CurrentColor,
-				"Silence mode off.", false, true));
+				"サイレントモードがオフです。", false, true));
 	}
 
 	public static Color GetUserColor(string userNickName)
@@ -785,12 +784,12 @@ public class IRCConnection : MonoBehaviour
 		if (msg.Text.Equals("!enablecommands", StringComparison.InvariantCultureIgnoreCase) && !CommandsEnabled && UserAccess.HasAccess(msg.UserNickName, AccessLevel.SuperUser, true))
 		{
 			CommandsEnabled = true;
-			SendMessage("Commands enabled.");
+			SendMessage("コマンドが有効化されました。");
 			return;
 		}
 		if (msg.Text.Equals("!enablecommands", StringComparison.InvariantCultureIgnoreCase) && UserAccess.HasAccess(msg.UserNickName, AccessLevel.SuperUser, true))
 		{
-			SendMessage("Commands are already enabled.");
+			SendMessage("コマンドは既に有効です。");
 			return;
 		}
 		if (!CommandsEnabled && !UserAccess.HasAccess(msg.UserNickName, AccessLevel.SuperUser, true) && (!TwitchPlaySettings.data.AllowSolvingCurrentBombWithCommandsDisabled || !TwitchGame.BombActive)) return;
@@ -798,9 +797,9 @@ public class IRCConnection : MonoBehaviour
 		{
 			CommandsEnabled = false;
 			if (TwitchPlaySettings.data.AllowSolvingCurrentBombWithCommandsDisabled && TwitchGame.BombActive)
-				SendMessage("Commands will be disabled once this bomb is completed or exploded.");
+				SendMessage("この爆弾が完了または爆破後、コマンドは無効化されます。");
 			else
-				SendMessage("Commands disabled.");
+				SendMessage("コマンドが無効化されました。");
 			return;
 		}
 
@@ -842,7 +841,7 @@ public class IRCConnection : MonoBehaviour
 
 						if (stopwatch.ElapsedMilliseconds > 10000) // Timeout if there hasn't been a response to the ping for 10s.
 						{
-							AddTextToHoldable("[IRC:Connect] Connection timed out.");
+							AddTextToHoldable("[IRC:Connect] 接続がタイムアウトしました。");
 							stopwatch.Reset();
 							_state = IRCConnectionState.Disconnected;
 
@@ -883,7 +882,7 @@ public class IRCConnection : MonoBehaviour
 		catch (Exception exception)
 		{
 			DebugHelper.LogException(exception, "An exception occurred trying to connect to IRC:");
-			AddTextToHoldable("[IRC:Disconnect] Connection failed.");
+			AddTextToHoldable("[IRC:Disconnect] 接続に失敗しました。");
 			_state = IRCConnectionState.Disconnected;
 		}
 	}
@@ -922,7 +921,7 @@ public class IRCConnection : MonoBehaviour
 			}
 			catch
 			{
-				AddTextToHoldable("[IRC:Disconnect] Connection failed.");
+				AddTextToHoldable("[IRC:Disconnect] 接続に失敗しました。");
 				_state = IRCConnectionState.Disconnected;
 			}
 		}
@@ -935,7 +934,7 @@ public class IRCConnection : MonoBehaviour
 				IRCCommand setColor = new IRCCommand($"PRIVMSG #{_settings.channelName} :.color {ColorOnDisconnect}");
 				if (setColor.CommandIsColor())
 				{
-					AddTextToHoldable("[IRC:Disconnect] Color {0} was requested, setting it now.", ColorOnDisconnect);
+					AddTextToHoldable("[IRC:Disconnect] 色「{0}」が要求されました。反映します。", ColorOnDisconnect);
 					while (stopWatch.ElapsedMilliseconds < _messageDelay)
 						Thread.Sleep(25);
 					output.WriteLine(setColor.Command);
@@ -947,7 +946,7 @@ public class IRCConnection : MonoBehaviour
 						Thread.Sleep(25);
 				}
 				_state = IRCConnectionState.Disconnected;
-				AddTextToHoldable("[IRC:Disconnect] Disconnected from chat IRC.");
+				AddTextToHoldable("[IRC:Disconnect] チャットとの接続を切断しました。");
 			}
 
 			lock (_sendQueue)
@@ -960,7 +959,7 @@ public class IRCConnection : MonoBehaviour
 		MainThreadQueue.Enqueue(() =>
 		{
 			if (!gameObject.activeInHierarchy)
-				AddTextToHoldable("[IRC:Disconnect] Twitch Plays disabled.");
+				AddTextToHoldable("[IRC:Disconnect] Twitch Playsが無効です。");
 		});
 	}
 

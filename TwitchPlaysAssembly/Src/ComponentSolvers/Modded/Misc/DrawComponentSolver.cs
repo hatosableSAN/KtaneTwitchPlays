@@ -76,7 +76,7 @@ public class DrawComponentSolver : ReflectionComponentSolver
 				yield break;
 		}
 		((MonoBehaviour) _component).StopAllCoroutines();
-		IRCConnection.SendMessage("The screen has turned green on Module " + Module.Code + " (Draw)!");
+		IRCConnection.SendMessage("モジュール" + Module.Code + "(早撃ち)の画面が緑色になりました！");
 		yield return new WaitForSeconds(5.25f);
 		if (!_component.GetValue<bool>("_isActive")) yield break;
 		Material passed = _component.GetValue<Material>("screenMat");

@@ -171,22 +171,22 @@ public static class UserAccess
 		userNickName = userNickName.FormatUsername();
 		if (!HasAccess(moderator, UserAccessData.Instance.MinimumAccessLevelForTimeoutCommand, true))
 		{
-			IRCConnection.SendMessage($"Sorry @{moderator}, you do not have sufficient privileges for this command.", moderator, !isWhisper);
+			IRCConnection.SendMessage($"@{moderator}さん：このコマンドの実行に必要な権限がありません。", moderator, !isWhisper);
 			return;
 		}
 		if (timeout <= 0)
 		{
-			IRCConnection.SendMessage("Usage: !timeout <user nick name> <time in seconds> [reason]. Timeout must be for at least one second.", moderator, !isWhisper);
+			IRCConnection.SendMessage("使用方法：!timeout <ユーザー名> <秒数> [理由]。秒数は1秒以上を指定する。", moderator, !isWhisper);
 			return;
 		}
 		if (HasAccess(userNickName, AccessLevel.Streamer))
 		{
-			IRCConnection.SendMessage($"Sorry @{moderator}, you cannot timeout the streamer.", moderator, !isWhisper);
+			IRCConnection.SendMessage($"@{moderator}さん：配信者をタイムアウトすることはできません。", moderator, !isWhisper);
 			return;
 		}
 		if (userNickName.EqualsIgnoreCase(moderator.ToLowerInvariant()))
 		{
-			IRCConnection.SendMessage($"Sorry @{moderator}, you cannot timeout yourself.", moderator, !isWhisper);
+			IRCConnection.SendMessage($"@{moderator}さん：自分自身をタイムアウトすることはできません。", moderator, !isWhisper);
 			return;
 		}
 		AddUser(userNickName, AccessLevel.Banned);
@@ -198,9 +198,9 @@ public static class UserAccess
 		UserAccessData.Instance.Bans[userNickName.ToLowerInvariant()] = ban;
 
 		WriteAccessList();
-		IRCConnection.SendMessage($"User {userNickName} was temporarily restricted from using commands for {timeout} seconds{(reason == null ? "." : $", for the following reason: {reason}.")} You can request permission to send commands again by talking to the staff.");
+		IRCConnection.SendMessage($"ユーザー「{userNickName}」は、{(reason == null ? "" : $"理由「{reason}」のため、")} {timeout} 秒間コマンドの使用が一時的に制限されています。コマンドの使用許可をモデレーターにリクエストすることができます。");
 		if (TwitchPlaySettings.data.EnableWhispers)
-			IRCConnection.SendMessage($"You were temporarily restricted from using commands for {timeout} seconds by {moderator}{(reason == null ? "." : $", for the following reason: {reason}.")} You can request permission to send commands again by talking to the staff.", userNickName, false);
+			IRCConnection.SendMessage($"ユーザー「{userNickName}」は、{(reason == null ? "" : $"理由「{reason}」のため、")} {timeout} 秒間コマンドの使用が一時的に制限されています。コマンドの使用許可をモデレーターにリクエストすることができます。", userNickName, false);
 	}
 
 	public static void BanUser(string userNickName, string moderator, string reason, bool isWhisper)
@@ -208,17 +208,17 @@ public static class UserAccess
 		userNickName = userNickName.FormatUsername();
 		if (!HasAccess(moderator, UserAccessData.Instance.MinimumAccessLevelForBanCommand, true))
 		{
-			IRCConnection.SendMessage($"Sorry @{moderator}, you do not have sufficient privileges for this command.", moderator, !isWhisper);
+			IRCConnection.SendMessage($"@{moderator}さん：このコマンドの実行に必要な権限がありません。", moderator, !isWhisper);
 			return;
 		}
 		if (HasAccess(userNickName, AccessLevel.Streamer))
 		{
-			IRCConnection.SendMessage($"Sorry @{moderator}, you cannot ban the streamer.", moderator, !isWhisper);
+			IRCConnection.SendMessage($"@{moderator}さん：配信者をBANすることはできません。", moderator, !isWhisper);
 			return;
 		}
 		if (userNickName.EqualsIgnoreCase(moderator))
 		{
-			IRCConnection.SendMessage($"Sorry @{moderator}, you cannot ban yourself.", moderator, !isWhisper);
+			IRCConnection.SendMessage($"@{moderator}さん：自分自身をBANすることはできません。", moderator, !isWhisper);
 			return;
 		}
 		AddUser(userNickName, AccessLevel.Banned);
@@ -229,9 +229,9 @@ public static class UserAccess
 		ban.BanExpiry = double.PositiveInfinity;
 		UserAccessData.Instance.Bans[userNickName.ToLowerInvariant()] = ban;
 		WriteAccessList();
-		IRCConnection.SendMessage($"User {userNickName} was restricted from using commands{(reason == null ? "." : $", for the following reason: {reason}.")} You can request permission to send commands again by talking to the staff.");
+		IRCConnection.SendMessage($"ユーザー「{userNickName}」は、{(reason == null ? "" : $"理由「{reason}」のため、")} コマンドの使用が一時的に制限されています。コマンドの使用許可をモデレーターにリクエストすることができます。");
 		if (TwitchPlaySettings.data.EnableWhispers)
-			IRCConnection.SendMessage($"You were restricted from using commands by {moderator}{(reason == null ? "." : $", for the following reason: {reason}. You can request permission to send commands again by talking to the staff.")}", userNickName, false);
+			IRCConnection.SendMessage($"ユーザー「{userNickName}」は、{(reason == null ? "" : $"理由「{reason}」のため、")} コマンドの使用が一時的に制限されています。コマンドの使用許可をモデレーターにリクエストすることができます。", userNickName, false);
 	}
 
 	private static void UnbanUser(string userNickName, bool rewrite = true)
@@ -248,13 +248,13 @@ public static class UserAccess
 		userNickName = userNickName.FormatUsername();
 		if (!HasAccess(moderator, UserAccessData.Instance.MinimumAccessLevelForUnbanCommand, true))
 		{
-			IRCConnection.SendMessage($"Sorry @{moderator}, you do not have sufficient privileges for this command.", moderator, !isWhisper);
+			IRCConnection.SendMessage($"@{moderator}さん：このコマンドの実行に必要な権限がありません。", moderator, !isWhisper);
 			return;
 		}
 		UnbanUser(userNickName);
-		IRCConnection.SendMessage($"User {userNickName} was unbanned from Twitch plays by {moderator}.");
+		IRCConnection.SendMessage($"{userNickName}さんは{moderator}によって、BANが解除されました。");
 		if (TwitchPlaySettings.data.EnableWhispers)
-			IRCConnection.SendMessage($"You were unbanned from Twitch Plays by {moderator}.", userNickName, false);
+			IRCConnection.SendMessage($"あなたは{moderator}によって、BANが解除されました。", userNickName, false);
 	}
 
 	public static BanData IsBanned(string userNickName)
@@ -269,28 +269,28 @@ public static class UserAccess
 		}
 
 		bool unban = ban.BanExpiry < DateTime.Now.TotalSeconds();
-		if (!string.IsNullOrEmpty(ban.BannedBy) && !UserAccessData.Instance.StickyBans)
+		if (!string.IsNullOrEmpty(ban.BannedBy) && !UserAccessData.Instance.StickyBans)//BAN実施者がいない&stickyban=false
 		{
-			if (double.IsInfinity(ban.BanExpiry) && !HasAccess(ban.BannedBy, UserAccessData.Instance.MinimumAccessLevelForBanCommand, true))
+			if (double.IsInfinity(ban.BanExpiry) && !HasAccess(ban.BannedBy, UserAccessData.Instance.MinimumAccessLevelForBanCommand, true))//永続BANかつユーザーがいない
 			{
 				unban = true;
-				IRCConnection.SendMessage($"User {userNickName} is no longer banned from twitch plays because {ban.BannedBy} no longer has the power to issue permanent bans.");
+				IRCConnection.SendMessage($"「{ban.BannedBy}」は権限を失ったため、{userNickName}さんのBANは解除されました。");
 				if (TwitchPlaySettings.data.EnableWhispers)
-					IRCConnection.SendMessage($"You are no longer banned from twitch plays because {ban.BannedBy} no longer has the power to issue permanent bans.", userNickName, false);
+					IRCConnection.SendMessage($"「{ban.BannedBy}」は権限を失ったため、あなたのBANは解除されました。", userNickName, false);
 			}
 			if (!double.IsInfinity(ban.BanExpiry) && !HasAccess(ban.BannedBy, UserAccessData.Instance.MinimumAccessLevelForTimeoutCommand, true))
 			{
 				unban = true;
-				IRCConnection.SendMessage($"User {userNickName} is no longer timed out from twitch plays because {ban.BannedBy} no longer has the power to issue time outs.");
+				IRCConnection.SendMessage($"「{ban.BannedBy}」は権限を失ったため、{userNickName}さんのタイムアウトは解除されました。");
 				if (TwitchPlaySettings.data.EnableWhispers)
-					IRCConnection.SendMessage($"You are no longer timed out from twitch plays because {ban.BannedBy} no longer has the power to issue time outs.", userNickName, false);
+					IRCConnection.SendMessage($"「{ban.BannedBy}」は権限を失ったため、あなたのBANは解除されました。", userNickName, false);
 			}
 		}
-		else if (!UserAccessData.Instance.StickyBans && !unban)
+		else if (!UserAccessData.Instance.StickyBans && !unban)//一時BANかつユーザーがいない
 		{
-			IRCConnection.SendMessage($"User {userNickName} is no longer banned from twitch plays, as there is no one to hold accountable for the ban.");
+			IRCConnection.SendMessage($"BAN実施者が存在しなくなったため、{userNickName}さんのBANは解除されました。");
 			if (TwitchPlaySettings.data.EnableWhispers)
-				IRCConnection.SendMessage("You are no longer banned from twitch plays, as there is no one to hold accountable for the ban.", userNickName, false);
+				IRCConnection.SendMessage("BAN実施者が存在しなくなったため、あなたのBANは解除されました。", userNickName, false);
 			unban = true;
 		}
 		else
@@ -330,23 +330,23 @@ public static class UserAccess
 		switch (level)
 		{
 			case AccessLevel.Banned:
-				return "Banned";
+				return "BAN済";
 			case AccessLevel.User:
-				return "User";
+				return "ユーザー";
 			case AccessLevel.NoPoints:
-				return "No Points";
+				return "ポイントなし";
 			case AccessLevel.Defuser:
-				return "Defuser";
+				return "処理担当者";
 			case AccessLevel.ScoringManager:
-				return "Scoring Manager";
+				return "スコア管理者";
 			case AccessLevel.Mod:
-				return "Moderator";
+				return "モデレーター";
 			case AccessLevel.Admin:
-				return "Admin";
+				return "管理者";
 			case AccessLevel.SuperUser:
-				return "Super User";
+				return "スーパーユーザー";
 			case AccessLevel.Streamer:
-				return "Streamer";
+				return "配信者";
 			default:
 				return null;
 		}

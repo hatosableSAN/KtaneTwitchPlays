@@ -86,7 +86,7 @@ public class TPElevatorSwitch : MonoBehaviour
 		gameObject.SetActive(false);
 	}
 
-	public void ReportState() => IRCConnection.SendMessageFormat("Elevator is {0}", GameplayState.GameplayRoomPrefabOverride == null ? (ElevatorRoomGameObject == null ? "not loaded" : "off") : "on");
+	public void ReportState() => IRCConnection.SendMessageFormat("エレベーターは{0}", GameplayState.GameplayRoomPrefabOverride == null ? (ElevatorRoomGameObject == null ? "読み込まれていません。" : "オフ状態です。") : "オン状態です。");
 
 	private IEnumerator FlipSwitch(bool on)
 	{

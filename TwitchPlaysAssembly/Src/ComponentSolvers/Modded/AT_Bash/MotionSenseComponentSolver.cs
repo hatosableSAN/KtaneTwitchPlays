@@ -10,10 +10,10 @@ public class MotionSenseComponentSolver : ComponentSolver
 	{
 		_component = module.BombComponent.GetComponent(ComponentType);
 		_needy = (KMNeedyModule) NeedyField.GetValue(_component);
-		ModInfo = ComponentSolverFactory.GetModuleInfo(GetModuleType(), "I am a passive module that awards strikes for motion while I am active. Use !{0} status to find out if I am active, and for how long.");
-		_needy.OnNeedyActivation += () => IRCConnection.SendMessage($"Motion Sense just activated: Active for {(int) _needy.GetNeedyTimeRemaining()} seconds.");
+		ModInfo = ComponentSolverFactory.GetModuleInfo(GetModuleType(), "これは特殊モジュールであり、起動中は、動きを検知するとミスが記録される。!{0} status [モジュールの起動状態を確認する]");
+		_needy.OnNeedyActivation += () => IRCConnection.SendMessage($"「動作検出」が起動しました。{(int) _needy.GetNeedyTimeRemaining()}秒間起動します。");
 
-		_needy.OnTimerExpired += () => IRCConnection.SendMessage("Motion Sense now Inactive.");
+		_needy.OnTimerExpired += () => IRCConnection.SendMessage("「動作検出」が無効になりました。");
 	}
 
 	protected internal override IEnumerator RespondToCommandInternal(string inputCommand)
@@ -23,7 +23,7 @@ public class MotionSenseComponentSolver : ComponentSolver
 			yield break;
 
 		bool active = (bool) ActiveField.GetValue(_component);
-		IRCConnection.SendMessage("Motion Sense Status: " + (active ? "Active for " + (int) _needy.GetNeedyTimeRemaining() + " seconds" : "Inactive"));
+		IRCConnection.SendMessage("「動作検出」は" + (active ? (int) _needy.GetNeedyTimeRemaining() + "秒間起動します。" : "停止中です。"));
 	}
 
 	private static readonly Type ComponentType = ReflectionHelper.FindType("MotionSenseModule");

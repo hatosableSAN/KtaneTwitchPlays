@@ -443,15 +443,15 @@ public class ModuleCameras : MonoBehaviour
 		{
 			if (Votes.Active && ix == 2)
 			{
-				NotesTexts[ix].text = $"{Votes.PossibleVotes[Votes.CurrentVoteType].Name}: {Votes.NumVoters} vote{(Votes.NumVoters == 1 ? "" : "s")}\n{Votes.TimeLeft} second{(Votes.TimeLeft == 1 ? "" : "s")} left.";
+				NotesTexts[ix].text = $"{Votes.PossibleVotes[Votes.CurrentVoteType].Name}: {Votes.NumVoters}票の{(Votes.NumVoters == 1 ? "" : "")}\n。残り{Votes.TimeLeft}秒{(Votes.TimeLeft == 1 ? "" : "")}です。";
 				if (!TwitchPlaySettings.data.DarkMode) NotesTextBackgrounds[ix].color = Votes.CurrentVoteType == VoteTypes.Detonation ? Color.HSVToRGB(0f, .246f, .93f) : Color.HSVToRGB(0.38f, .246f, .93f);
 				else NotesTextBackgrounds[ix].color = Votes.CurrentVoteType == VoteTypes.Detonation ? new Color32(0xE9, 0x19, 0x16, 0xFF) : new Color32(0x00, 0xAD, 0x03, 0xFF);
 				NotesTextIDs[ix].text = "!vote";
 			}
 			else if (OtherModes.TrainingModeOn && TwitchGame.Instance.TrainingModeRemainingTime > 0 && ix == 2)
 			{
-				string _plural = TwitchGame.Instance.TrainingModeRemainingTime == 1 ? "" : "s";
-				NotesTexts[ix].text = $"Training Mode Auto-Detonation is enabled. This bomb will be detonated in {TwitchGame.Instance.TrainingModeRemainingTime} minute{_plural}.";
+				string _plural = TwitchGame.Instance.TrainingModeRemainingTime == 1 ? "" : "";
+				NotesTexts[ix].text = $"このトレーニングモードでは自動起爆が有効になっています。この爆弾は残り{TwitchGame.Instance.TrainingModeRemainingTime}分で爆発します。";
 				if (!TwitchPlaySettings.data.DarkMode) NotesTextBackgrounds[ix].color = Color.HSVToRGB(0.38f, .246f, .93f);
 				else NotesTextBackgrounds[ix].color = new Color32(0x00, 0xAD, 0x03, 0xFF);
 				NotesTextIDs[ix].text = "";
@@ -462,7 +462,7 @@ public class ModuleCameras : MonoBehaviour
 				var numNamed = TwitchGame.Instance.CommandQueue.Count - numNameless;
 				NotesTexts[ix].text = "QUEUE: " +
 					(TwitchGame.Instance.CommandQueue.Count == 0 ? "ACTIVE" : "") +
-					(numNameless > 0 ? $"{numNameless} item{(numNameless == 1 ? "" : "s")}" : "") +
+					(numNameless > 0 ? $"{numNameless} item{(numNameless == 1 ? "" : "")}" : "") +
 					(numNameless > 0 && numNamed > 0 ? " + " : "") +
 					TwitchGame.Instance.CommandQueue.Where(c => c.Name != null).Select(c => $"“{c.Name}”").Join(", ");
 				if (!TwitchPlaySettings.data.DarkMode) NotesTextBackgrounds[ix].color = Color.HSVToRGB(hue, .246f, .93f);
@@ -565,12 +565,12 @@ public class ModuleCameras : MonoBehaviour
 		}
 		else if (OtherModes.VSModeOn)
 		{
-			int bossHealth = OtherModes.GetEvilHealth();
-			int teamHealth = OtherModes.GetGoodHealth();
+			int bossHealth = OtherModes.GetWhiteHealth();
+			int teamHealth = OtherModes.GetRedHealth();
 			StrikesPrefab.color = Color.cyan;
 			ConfidencePrefab.color = Color.red;
-			StrikesPrefab.text = $"{teamHealth} HP";
-			ConfidencePrefab.text = $"{bossHealth} HP";
+			StrikesPrefab.text = $"HP {teamHealth}";
+			ConfidencePrefab.text = $"HP {bossHealth}";
 		}
 		else
 		{

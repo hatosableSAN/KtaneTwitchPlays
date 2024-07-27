@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using Assets.Scripts.Settings;
 using UnityEngine;
 
-/// <summary>Commands for the freeplay briefcase.</summary>
+/// <summary>フリープレイのケースに関するコマンド</summary>
 /// <prefix>freeplay </prefix>
 public static class FreeplayCommands
 {
@@ -13,23 +13,23 @@ public static class FreeplayCommands
 
 	/// <name>Needy</name>
 	/// <syntax>needy on\nneedy off</syntax>
-	/// <summary>Enables or disables the needy switch.</summary>
+	/// <summary>特殊モジュールのスイッチを操作する。</summary>
 	[Command(@"needy(?: +(on)| +off)")]
 	public static void Needy(FloatingHoldable holdable, [Group(1)] bool on, string user, bool isWhisper) => SetSetting(holdable, on, user, isWhisper, s => s.HasNeedy, s => s.NeedyToggle, TwitchPlaySettings.data.EnableFreeplayNeedy, TwitchPlaySettings.data.FreePlayNeedyDisabled);
 	/// <name>Hardcore</name>
 	/// <syntax>hardcore on\nhardcore off</syntax>
-	/// <summary>Enables or disables the hardcore switch.</summary>
+	/// <summary>ハードコアのスイッチを操作する。</summary>
 	[Command(@"hardcore(?: +(on)| +off)")]
 	public static void Hardcore(FloatingHoldable holdable, [Group(1)] bool on, string user, bool isWhisper) => SetSetting(holdable, on, user, isWhisper, s => s.IsHardCore, s => s.HardcoreToggle, TwitchPlaySettings.data.EnableFreeplayHardcore, TwitchPlaySettings.data.FreePlayHardcoreDisabled);
 	/// <name>Mods Only</name>
 	/// <syntax>mods only\nmods only off</syntax>
-	/// <summary>Enables or disables the mods only.</summary>
+	/// <summary>MODのみを使用するかどうか選択する。</summary>
 	[Command(@"mods ?only(?: +(on)| +off)")]
 	public static void ModsOnly(FloatingHoldable holdable, [Group(1)] bool on, string user, bool isWhisper) => SetSetting(holdable, on, user, isWhisper, s => s.OnlyMods, s => s.ModsOnly, TwitchPlaySettings.data.EnableFreeplayModsOnly, TwitchPlaySettings.data.FreePlayModsOnlyDisabled);
 
 	/// <name>Set Time</name>
 	/// <syntax>time (hours):[minutes]:[seconds]</syntax>
-	/// <summary>Sets the amount of time the bomb will have.</summary>
+	/// <summary>爆弾の時間を設定する。</summary>
 	[Command(@"timer? +(\d+):(\d{1,3}):(\d{2})")]
 	public static IEnumerator ChangeTimerHours(FloatingHoldable holdable, [Group(1)] int hours, [Group(2)] int minutes, [Group(3)] int seconds) => SetBombTimer(holdable, hours, minutes, seconds);
 	[Command(@"timer? +(\d{1,3}):(\d{2})")]
@@ -37,7 +37,7 @@ public static class FreeplayCommands
 
 	/// <name>Set Bombs</name>
 	/// <syntax>bombs [bombs]</syntax>
-	/// <summary>Sets the number of bombs.</summary>
+	/// <summary>爆弾の個数を設定する。</summary>
 	[Command(@"bombs +(\d+)")]
 	public static IEnumerator ChangeBombCount(FloatingHoldable holdable, [Group(1)] int bombCount)
 	{
@@ -52,7 +52,7 @@ public static class FreeplayCommands
 			int lastBombCount = MultipleBombs.GetFreePlayBombCount();
 			buttonSelectable.Trigger();
 			yield return new WaitForSeconds(0.01f);
-			// Stop here if we hit a maximum or minimum
+			// 上限/下限に達したら止まる。
 			if (lastBombCount == MultipleBombs.GetFreePlayBombCount())
 				yield break;
 		}
@@ -60,7 +60,7 @@ public static class FreeplayCommands
 
 	/// <name>Set Modules</name>
 	/// <syntax>modules [modules]</syntax>
-	/// <summary>Sets the number of modules each bomb will have.</summary>
+	/// <summary>モジュール数を設定する。</summary>
 	[Command(@"modules +(\d+)")]
 	public static IEnumerator ChangeModuleCount(FloatingHoldable holdable, [Group(1)] int moduleCount)
 	{
@@ -80,13 +80,13 @@ public static class FreeplayCommands
 
 	/// <name>Start</name>
 	/// <syntax>start</syntax>
-	/// <summary>Start the game.</summary>
+	/// <summary>ゲームを開始する。</summary>
 	[Command(@"start")]
 	public static void Start(FloatingHoldable holdable) => holdable.GetComponent<FreeplayDevice>().StartButton.GetComponent<Selectable>().Trigger();
 
 	/// <name>Advanced Set / Start</name>
 	/// <syntax>set [parameters]\nstart [parameters]</syntax>
-	/// <summary>Sets or starts a bomb with a bunch of parameters. Combine any of the following to set the bomb parameters. (hours):[minutes]:[seconds], [#] bombs, [#] modules, hardcore, modsonly, needy.</summary>
+	/// <summary>一括でパラメーターを設定する。Startでそのまま起動もできる。パラメーターは以下のいずれかを組み合わせる：(hours):[minutes]:[seconds], [#] bombs, [#] modules, hardcore, modsonly, needy.</summary>
 	[Command(@"(set|start) +(.*)")]
 	public static IEnumerator StartAdvanced(FloatingHoldable holdable, [Group(1)] string command, [Group(2)] string parameters, string user, bool isWhisper)
 	{
@@ -138,7 +138,7 @@ public static class FreeplayCommands
 
 		var device = holdable.GetComponent<FreeplayDevice>();
 		int timeIndex = (hours * 120) + (minutes * 2) + (seconds / 30);
-		//Double the available free play time. (The doubling stacks with the Multiple bombs module installed)
+		//複数ある場合、フリープレイの時間を2倍に増やす(Multiple bombsがインストールされているとき))
 		float originalMaxTime = FreeplayDevice.MAX_SECONDS_TO_SOLVE;
 		int maxModules = (int) _maxModuleField.GetValue(device);
 		int multiplier = MultipleBombs.Installed() ? (MultipleBombs.GetMaximumBombCount() * 2) - 1 : 1;
@@ -159,7 +159,7 @@ public static class FreeplayCommands
 				break;
 		}
 
-		//Restore original max time, just in case Multiple bombs module was NOT installed, to avoid false detection.
+		//Multiple bombsモジュールがインストールされていない場合に備えて、元の最大時間を復元する。
 		FreeplayDevice.MAX_SECONDS_TO_SOLVE = originalMaxTime;
 	}
 

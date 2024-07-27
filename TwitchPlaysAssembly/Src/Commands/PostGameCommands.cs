@@ -1,19 +1,19 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-/// <summary>Commands that be used on the post game screen.</summary>
+/// <summary>ゲーム終了後の画面で使えるコマンド</summary>
 public static class PostGameCommands
 {
 	#region Commands
 	/// <name>Continue / Back</name>
 	/// <syntax>continue\nback</syntax>
-	/// <summary>Presses either the continue or back button.</summary>
+	/// <summary>続ける/戻るボタンを押す。</summary>
 	[Command(@"(continue|back)")]
 	public static IEnumerator Continue() => DoButton(Object.FindObjectOfType<ResultPage>()?.ContinueButton);
 
 	/// <name>Retry</name>
 	/// <syntax>retry</syntax>
-	/// <summary>If enabled, retries the mission.</summary>
+	/// <summary>ミッションをリトライする。</summary>
 	[Command(@"retry")]
 	public static IEnumerator Retry(string user, bool isWhisper)
 	{

@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>Commands for the dynamic mission generator.</summary>
+/// <summary>DMGで使えるコマンド</summary>
 /// <prefix>dmg </prefix>
 public static class DMGCommands
 {
@@ -16,7 +16,7 @@ public static class DMGCommands
 
 	/// <name>Run</name>
 	/// <syntax>run</syntax>
-	/// <summary>Runs the dynamic mission generator with specific text. If enabled, players can only use this in Training Mode. Otherwise, only admins can access the DMG.</summary>
+	/// <summary>特定のテキストでDMGを実行する。トレーニングモードであるかAdmin権限所有者のみ利用できる。</summary>
 	[Command("run (.+)")]
 	public static IEnumerator Run(string user, [Group(1)] string text)
 	{
@@ -24,12 +24,12 @@ public static class DMGCommands
 		{
 			if (!TwitchPlaySettings.data.EnableDMGForEveryone)
 			{
-				IRCConnection.SendMessage("Only admins can use the DMG.");
+				IRCConnection.SendMessage("「Admin」権限所持者のみDMGを利用できます。");
 				yield break;
 			}
 			if (!OtherModes.TrainingModeOn)
 			{
-				IRCConnection.SendMessage("Only admins can use DMG when not in training mode.");
+				IRCConnection.SendMessage("トレーニングモード以外では、「Admin」権限所持者のみDMGを利用できます。");
 				yield break;
 			}
 		}
@@ -57,7 +57,7 @@ public static class DMGCommands
 
 			if (entryIndex == -1)
 			{
-				IRCConnection.SendMessage("DMG is not installed.");
+				IRCConnection.SendMessage("DMGがインストールされていません。");
 				yield break;
 			}
 

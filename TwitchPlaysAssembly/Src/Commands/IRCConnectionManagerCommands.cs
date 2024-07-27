@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections;
 
-/// <summary>Commands for the IRC Connection Holdable.</summary>
+/// <summary>チャット接続用バインダーのコマンド</summary>
 public static class IRCConnectionManagerCommands
 {
 	/// <name>Disconnect</name>
 	/// <syntax>disconnect</syntax>
-	/// <summary>Presses the disconnect button.</summary>
+	/// <summary>「Disconnect」ボタンを押す。</summary>
 	/// <restriction>Streamer</restriction>
 	[Command(@"disconnect")]
 	public static IEnumerator Disconnect(TwitchHoldable holdable, string user, bool isWhisper) =>

@@ -17,7 +17,7 @@ public class LockpickMazeShim : ComponentSolverShim
 			{
 				char col = (char)(_component.GetValue<int>("CurrentColumn") + 'A');
 				char row = (char)(_component.GetValue<int>("CurrentRow") + '1');
-				IRCConnection.SendMessage($"The pawn was at position {col}{row} when time expired on module {module.Code} (Lockpick Maze). It will remain there when the module is restarted.");
+				IRCConnection.SendMessage($"モジュール{module.Code}（ロックピック迷路）が時間切れになったとき、現在地は{col}{row}でした。これは、モジュールが再起動されてもそのままになります。");
 			}
 			return false;
 		};

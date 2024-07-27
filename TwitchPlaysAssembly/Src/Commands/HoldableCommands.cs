@@ -1,37 +1,37 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-/// <summary>Contains commands for all holdables (including the freeplay case and the missions binder).</summary>
+/// <summary>持ち上げ可能物に含まれるコマンド(フリープレイケースやバインダーを含む)</summary>
 public static class HoldableCommands
 {
 	#region Commands
 	/// <name>Help</name>
 	/// <syntax>help</syntax>
-	/// <summary>Sends a message to chat with information on what commands you can use to intreact with the holdable.</summary>
+	/// <summary>持ち上げ可能物に対して実行可能なコマンドを表示する。</summary>
 	[Command("help")]
 	public static bool Help(TwitchHoldable holdable, string user, bool isWhisper) => holdable.PrintHelp(user, isWhisper);
 
 	/// <name>Hold</name>
 	/// <syntax>hold</syntax>
-	/// <summary>Holds the holdable.</summary>
+	/// <summary>持ち上げ可能物を持ち上げる。</summary>
 	[Command("(hold|pick up)")]
 	public static IEnumerator Hold(TwitchHoldable holdable) => holdable.Hold();
 
 	/// <name>Drop</name>
 	/// <syntax>drop</syntax>
-	/// <summary>Drops the holdable.</summary>
+	/// <summary>持ち上げ可能物を置く。</summary>
 	[Command("(drop|let go|put down)")]
 	public static IEnumerator Drop(TwitchHoldable holdable) => holdable.Drop();
 
 	/// <name>Turn</name>
 	/// <syntax>turn</syntax>
-	/// <summary>Turns the holdable around.</summary>
+	/// <summary>持ち上げ可能物を回転させる。</summary>
 	[Command(@"(turn|turn round|turn around|rotate|flip|spin)")]
 	public static IEnumerator Flip(TwitchHoldable holdable) => holdable.Turn();
 
 	/// <name>Throw</name>
 	/// <syntax>throw\nthrow 10</syntax>
-	/// <summary>Throws the holdable with an optional strength.</summary>
+	/// <summary>持ち上げ可能物をある強さで投げる。</summary>
 	[Command(@"(?:throw|yeet) *(\d+)?", AccessLevel.Admin, AccessLevel.Admin)]
 	public static IEnumerator Throw(FloatingHoldable holdable, [Group(1)] int? optionalStrength = 5)
 	{

@@ -183,7 +183,7 @@ public abstract class ComponentSolver
 
 					Leaderboard.Instance.AddScore(_currentUserNickName, -penalty);
 					IRCConnection.SendMessageFormat(TwitchPlaySettings.data.UnsubmittableAnswerPenalty,
-						_currentUserNickName, Code, ModInfo.moduleDisplayName, penalty, penalty > 1 ? "s" : "");
+						_currentUserNickName, Code, ModInfo.moduleTranslatedName ?? ModInfo.moduleDisplayName, penalty, penalty > 1 ? "" : "");
 				}
 				else if (currentString.Equals("parseerror", StringComparison.InvariantCultureIgnoreCase))
 				{
@@ -216,7 +216,7 @@ public abstract class ComponentSolver
 					{
 						CoroutineCanceller.ResetCancel();
 						if (!string.IsNullOrEmpty(match.Groups[2].Value))
-							IRCConnection.SendMessage($"Sorry @{userNickName}, {match.Groups[2].Value.Trim()}");
+							IRCConnection.SendMessage($"@{userNickName}さん：{match.Groups[2].Value.Trim()}");
 						break;
 					}
 				}
@@ -414,13 +414,13 @@ public abstract class ComponentSolver
 						switch (currentStrings.Length)
 						{
 							case 2:
-								Module.Bomb.CauseExplosionByModuleCommand(currentStrings[1], ModInfo.moduleDisplayName);
+								Module.Bomb.CauseExplosionByModuleCommand(currentStrings[1], ModInfo.moduleTranslatedName ?? ModInfo.moduleDisplayName);
 								break;
 							case 3:
 								Module.Bomb.CauseExplosionByModuleCommand(currentStrings[1], currentStrings[2]);
 								break;
 							default:
-								Module.Bomb.CauseExplosionByModuleCommand(string.Empty, ModInfo.moduleDisplayName);
+								Module.Bomb.CauseExplosionByModuleCommand(string.Empty, ModInfo.moduleTranslatedName ?? ModInfo.moduleDisplayName);
 								break;
 						}
 						break;
@@ -612,7 +612,7 @@ public abstract class ComponentSolver
 
 		if (!string.IsNullOrEmpty(chatMessage)) SendToTwitchChat($"sendtochat {chatMessage}", userNickName);
 		AwardStrikes(userNickName, Module.Bomb.StrikeLimit - Module.Bomb.StrikeCount);
-		Module.Bomb.CauseExplosionByModuleCommand(string.Empty, ModInfo.moduleDisplayName);
+		Module.Bomb.CauseExplosionByModuleCommand(string.Empty, ModInfo.moduleTranslatedName ?? ModInfo.moduleDisplayName);
 	}
 
 	protected IEnumerator ChainCommand(string command)
@@ -925,7 +925,7 @@ public abstract class ComponentSolver
 
 			if (solver.AttemptedForcedSolve)
 			{
-				IRCConnection.SendMessage("Forcing the module into a solved state.");
+				IRCConnection.SendMessage("モジュールの状態を、強制的に解除済みに設定します。");
 				CommonReflectedTypeInfo.HandlePassMethod.Invoke(bombComponent, null);
 				return;
 			}
@@ -997,7 +997,7 @@ public abstract class ComponentSolver
 			TwitchPlaySettings.AddRewardBonus(componentValue);
 		else
 		{
-			string headerText = UnsupportedModule ? ModInfo.moduleDisplayName : Module.BombComponent.GetModuleDisplayName();
+			string headerText = ModInfo.moduleTranslatedName ?? (UnsupportedModule ? ModInfo.moduleDisplayName : Module.BombComponent.GetModuleDisplayName());
 			CalculateVSHP(userNickName, componentValue, out OtherModes.Team? teamDamaged, out int HPDamage);
 			if (OtherModes.VSModeOn)
 			{
@@ -1006,11 +1006,11 @@ public abstract class ComponentSolver
 					if (componentValue != 0)
 						messageParts.Add(string.Format(TwitchPlaySettings.data.AwardVsSolve, Code, userNickName,
 							componentValue, headerText, HPDamage,
-							teamDamaged == OtherModes.Team.Evil ? "the evil team" : "the good team"));
+							teamDamaged == OtherModes.Team.White ? "白組" : "紅組"));
 					else
 						messageParts.Add(string.Format(TwitchPlaySettings.data.AwardVsSolveNoPoints, Code, userNickName,
 							headerText, HPDamage,
-							teamDamaged == OtherModes.Team.Evil ? "the evil team" : "the good team"));
+							teamDamaged == OtherModes.Team.White ? "白組" : "紅組"));
 				}
 				else if (componentValue != 0)
 					messageParts.Add(string.Format(TwitchPlaySettings.data.AwardSolve, Code, userNickName,
@@ -1042,12 +1042,12 @@ public abstract class ComponentSolver
 			if (time < TwitchPlaySettings.data.TimeModeMinimumTimeGained)
 			{
 				Module.Bomb.Bomb.GetTimer().TimeRemaining = Module.Bomb.CurrentTimer + TwitchPlaySettings.data.TimeModeMinimumTimeGained;
-				messageParts.Add($"Bomb time increased by the minimum {TwitchPlaySettings.data.TimeModeMinimumTimeGained} seconds!");
+				messageParts.Add($"爆弾の時間が最小の{TwitchPlaySettings.data.TimeModeMinimumTimeGained}秒増加した!");
 			}
 			else
 			{
 				Module.Bomb.Bomb.GetTimer().TimeRemaining = Module.Bomb.CurrentTimer + time;
-				messageParts.Add($"Bomb time increased by {Math.Round(time, 1)} seconds!");
+				messageParts.Add($"爆弾の時間が{Math.Round(time, 1)}秒増加した!");
 			}
 			OtherModes.SetMultiplier(OtherModes.GetMultiplier() + TwitchPlaySettings.data.TimeModeSolveBonus);
 		}
@@ -1060,7 +1060,7 @@ public abstract class ComponentSolver
 	private void AwardStrikes(string userNickName, int strikeCount)
 	{
 		List<string> messageParts = new List<string>();
-		string headerText = UnsupportedModule ? ModInfo.moduleDisplayName : Module.BombComponent.GetModuleDisplayName();
+		string headerText = ModInfo.moduleTranslatedName ?? (UnsupportedModule ? ModInfo.moduleDisplayName : Module.BombComponent.GetModuleDisplayName());
 		int strikePenalty = -TwitchPlaySettings.data.StrikePenalty * (TwitchPlaySettings.data.EnableRewardMultipleStrikes ? strikeCount : 1);
 		strikePenalty = (strikePenalty * OtherModes.ScoreMultiplier).RoundToInt();
 		bool VSAffect = OtherModes.VSModeOn && !string.IsNullOrEmpty(userNickName);
@@ -1070,20 +1070,20 @@ public abstract class ComponentSolver
 		{
 			CalculateVSHP(userNickName, strikePenalty, out teamDamaged, out HPDamage);
 			messageParts.Add(string.Format(TwitchPlaySettings.data.AwardVsStrike, Code,
-				strikeCount == 1 ? "a" : strikeCount.ToString(), strikeCount == 1 ? "" : "s", "0", teamDamaged == OtherModes.Team.Good ? "the good team" : "the evil team",
-				string.IsNullOrEmpty(StrikeMessage) || StrikeMessageConflict ? "" : " caused by " + StrikeMessage, headerText, HPDamage, strikePenalty, userNickName));
+				strikeCount == 1 ? "" : strikeCount.ToString(), strikeCount == 1 ? "" : "", "0", teamDamaged == OtherModes.Team.Red ? "赤組" : "白組",
+				string.IsNullOrEmpty(StrikeMessage) || StrikeMessageConflict ? "" : "原因：" + StrikeMessage, headerText, HPDamage, strikePenalty, userNickName));
 		}
 		else
 		{
 			if (!string.IsNullOrEmpty(userNickName))
 				messageParts.Add(string.Format(TwitchPlaySettings.data.AwardStrike, Code,
-					strikeCount == 1 ? "a" : strikeCount.ToString(), strikeCount == 1 ? "" : "s", "0", userNickName,
-					string.IsNullOrEmpty(StrikeMessage) || StrikeMessageConflict ? "" : " caused by " + StrikeMessage,
+					strikeCount == 1 ? "" : strikeCount.ToString(), strikeCount == 1 ? "" : "", "0", userNickName,
+					string.IsNullOrEmpty(StrikeMessage) || StrikeMessageConflict ? "" : "原因 " + StrikeMessage,
 					headerText, strikePenalty));
 			else
 				messageParts.Add(string.Format(TwitchPlaySettings.data.AwardRewardStrike, Code,
-					strikeCount == 1 ? "a" : strikeCount.ToString(), strikeCount == 1 ? "" : "s", headerText,
-					string.IsNullOrEmpty(StrikeMessage) || StrikeMessageConflict ? "" : " caused by " + StrikeMessage));
+					strikeCount == 1 ? "" : strikeCount.ToString(), strikeCount == 1 ? "" : "", headerText,
+					string.IsNullOrEmpty(StrikeMessage) || StrikeMessageConflict ? "" : "原因：" + StrikeMessage));
 		}
 
 		if (strikeCount <= 0) return;
@@ -1095,7 +1095,7 @@ public abstract class ComponentSolver
 		int currentReward = Convert.ToInt32(originalReward * (1 - (1 - TwitchPlaySettings.data.AwardDropMultiplierOnStrike) * OtherModes.ScoreMultiplier));
 		TwitchPlaySettings.AddRewardBonus(currentReward - originalReward);
 		if (currentReward != originalReward)
-			messageParts.Add($"Reward {(currentReward > 0 ? "reduced" : "increased")} to {currentReward} points.");
+			messageParts.Add($"爆弾報酬が{currentReward}ポイントに{(currentReward > 0 ? "減少" : "増加")}した!");
 
 		if (VSAffect)
 			VSUpdate(teamDamaged, HPDamage);
@@ -1106,28 +1106,30 @@ public abstract class ComponentSolver
 			bool multiDropped = OtherModes.DropMultiplier();
 			float multiplier = OtherModes.GetAdjustedMultiplier();
 			string tempMessage;
+
+			// 
 			if (multiDropped)
 			{
 				if (Mathf.Abs(originalMultiplier - multiplier) >= 0.1)
-					tempMessage = "Multiplier reduced to " + Math.Round(multiplier, 1) + " and time";
+					tempMessage = "倍率が" + Math.Round(multiplier, 1) + "に減少し、時間が";
 				else
-					tempMessage = "Time";
+					tempMessage = "時間が";
 			}
 			else
 				tempMessage =
-					$"Multiplier set at {TwitchPlaySettings.data.TimeModeMinMultiplier}, cannot be further reduced.  Time";
+					$"倍率が最小値の{TwitchPlaySettings.data.TimeModeMinMultiplier}まで減少し、時間が";
 
 			if (Module.Bomb.CurrentTimer < (TwitchPlaySettings.data.TimeModeMinimumTimeLost / TwitchPlaySettings.data.TimeModeTimerStrikePenalty))
 			{
 				Module.Bomb.Bomb.GetTimer().TimeRemaining = Module.Bomb.CurrentTimer - TwitchPlaySettings.data.TimeModeMinimumTimeLost;
-				tempMessage += $" reduced by {TwitchPlaySettings.data.TimeModeMinimumTimeLost} seconds.";
+				tempMessage += $"{TwitchPlaySettings.data.TimeModeMinimumTimeLost}秒減少した。";
 			}
 			else
 			{
 				float timeReducer = Module.Bomb.CurrentTimer * TwitchPlaySettings.data.TimeModeTimerStrikePenalty;
 				double easyText = Math.Round(timeReducer, 1);
 				Module.Bomb.Bomb.GetTimer().TimeRemaining = Module.Bomb.CurrentTimer - timeReducer;
-				tempMessage += $" reduced by {Math.Round(TwitchPlaySettings.data.TimeModeTimerStrikePenalty * 100, 1)}%. ({easyText} seconds)";
+				tempMessage += $"{Math.Round(TwitchPlaySettings.data.TimeModeTimerStrikePenalty * 100, 1)}%({easyText}秒)減少した。";
 			}
 			messageParts.Add(tempMessage);
 		}
@@ -1149,15 +1151,15 @@ public abstract class ComponentSolver
 		Leaderboard.Instance?.AddScore(userNickName, pointsAwarded);
 		if (!OtherModes.VSModeOn)
 			messageParts.Add(string.Format(TwitchPlaySettings.data.AwardPPA, userNickName,
-				pointsAwarded > 0 ? "awarded" : "deducted", Math.Abs(pointsAwarded), Math.Abs(pointsAwarded) > 1 ? "s" : "",
+				pointsAwarded > 0 ? "awarded" : "deducted", Math.Abs(pointsAwarded), Math.Abs(pointsAwarded) > 1 ? "" : "",
 				Code, ModInfo.moduleDisplayName, pointsAwarded > 0 ? TwitchPlaySettings.data.PosPPAEmote : TwitchPlaySettings.data.NegPPAEmote));
 		else
 		{
 			CalculateVSHP(userNickName, pointsAwarded, out OtherModes.Team? teamDamaged, out int HPDamage);
 
 			messageParts.Add(string.Format(TwitchPlaySettings.data.AwardVSPPA, userNickName,
-				pointsAwarded > 0 ? "awarded" : "deducted", Math.Abs(pointsAwarded), Math.Abs(pointsAwarded) > 1 ? "s" : "",
-				Code, ModInfo.moduleDisplayName, HPDamage, teamDamaged == OtherModes.Team.Evil ? "the evil team" : "the good team",
+				pointsAwarded > 0 ? "awarded" : "deducted", Math.Abs(pointsAwarded), Math.Abs(pointsAwarded) > 1 ? "" : "",
+				Code, ModInfo.moduleDisplayName, HPDamage, teamDamaged == OtherModes.Team.White ? "the White team" : "the Red team",
 				pointsAwarded > 0 ? TwitchPlaySettings.data.PosPPAEmote : TwitchPlaySettings.data.NegPPAEmote));
 
 			VSUpdate(teamDamaged, HPDamage);
@@ -1167,7 +1169,7 @@ public abstract class ComponentSolver
 		{
 			float time = OtherModes.GetAdjustedMultiplier() * pointsAwarded;
 			Module.Bomb.Bomb.GetTimer().TimeRemaining = Module.Bomb.CurrentTimer + time;
-			messageParts.Add($"Bomb time increased by {Math.Round(time, 1)} seconds!");
+			messageParts.Add($"爆弾の時間が{Math.Round(time, 1)}秒増加した!");
 		}
 
 		IRCConnection.SendMessage(messageParts.Join());
@@ -1177,21 +1179,21 @@ public abstract class ComponentSolver
 	{
 		HPDamage = Mathf.FloorToInt(Math.Abs(pointsAwarded) * TwitchPlaySettings.data.VSHPMultiplier) == 0 ? 1 : Mathf.FloorToInt(Math.Abs(pointsAwarded) * TwitchPlaySettings.data.VSHPMultiplier);
 		var entry = Leaderboard.Instance.GetEntry(userNickName);
-		teamDamaged = pointsAwarded > 0 ? (entry.Team == OtherModes.Team.Good ? OtherModes.Team.Evil : OtherModes.Team.Good) : entry.Team;
+		teamDamaged = pointsAwarded > 0 ? (entry.Team == OtherModes.Team.Red ? OtherModes.Team.White : OtherModes.Team.Red) : entry.Team;
 
 		switch (teamDamaged)
 		{
-			case OtherModes.Team.Evil:
-				if (OtherModes.GetEvilHealth() < 2 && pointsAwarded < 0)
+			case OtherModes.Team.White:
+				if (OtherModes.GetWhiteHealth() < 2 && pointsAwarded < 0)
 					HPDamage = 0;
-				else if (OtherModes.GetEvilHealth() <= HPDamage && OtherModes.GetEvilHealth() > 1)
-					HPDamage = OtherModes.GetEvilHealth() - 1;
+				else if (OtherModes.GetWhiteHealth() <= HPDamage && OtherModes.GetWhiteHealth() > 1)
+					HPDamage = OtherModes.GetWhiteHealth() - 1;
 				break;
-			case OtherModes.Team.Good:
-				if (OtherModes.GetGoodHealth() < 2 && pointsAwarded < 0)
+			case OtherModes.Team.Red:
+				if (OtherModes.GetRedHealth() < 2 && pointsAwarded < 0)
 					HPDamage = 0;
-				if (OtherModes.GetGoodHealth() <= HPDamage && OtherModes.GetGoodHealth() > 1)
-					HPDamage = OtherModes.GetGoodHealth() - 1;
+				if (OtherModes.GetRedHealth() <= HPDamage && OtherModes.GetRedHealth() > 1)
+					HPDamage = OtherModes.GetRedHealth() - 1;
 				break;
 		}
 	}
@@ -1202,26 +1204,26 @@ public abstract class ComponentSolver
 			return;
 		switch (teamDamaged)
 		{
-			case OtherModes.Team.Good:
-				if (OtherModes.GetGoodHealth() - HPDamage < 1)
+			case OtherModes.Team.Red:
+				if (OtherModes.GetRedHealth() - HPDamage < 1)
 				{
-					OtherModes.goodHealth = 0;
+					OtherModes.RedHealth = 0;
 					TwitchPlaysService.Instance.CoroutineQueue.CancelFutureSubcoroutines();
 					TwitchGame.Instance.Bombs[0].CauseVersusExplosion();
 					return;
 				}
 				else
-					OtherModes.SubtractGoodHealth(HPDamage);
+					OtherModes.SubtractRedHealth(HPDamage);
 				break;
-			case OtherModes.Team.Evil:
-				if (OtherModes.GetEvilHealth() - HPDamage < 1)
+			case OtherModes.Team.White:
+				if (OtherModes.GetWhiteHealth() - HPDamage < 1)
 				{
-					OtherModes.evilHealth = 0;
+					OtherModes.WhiteHealth = 0;
 					GameCommands.SolveBomb();
 					return;
 				}
 				else
-					OtherModes.SubtractEvilHealth(HPDamage);
+					OtherModes.SubtractWhiteHealth(HPDamage);
 				break;
 		}
 		TwitchGame.ModuleCameras.UpdateConfidence();
@@ -1242,7 +1244,7 @@ public abstract class ComponentSolver
 		if (rewardBonus != 0)
 		{
 			TwitchPlaySettings.AddRewardBonus(rewardBonus);
-			IRCConnection.SendMessage($"Reward increased by {rewardBonus} for defusing module !{Code} ({ModInfo.moduleDisplayName}).");
+			IRCConnection.SendMessage($"モジュール{Code} ({ModInfo.moduleTranslatedName ?? ModInfo.moduleDisplayName})を解除して爆弾報酬が{rewardBonus}増加した!");
 		}
 	}
 

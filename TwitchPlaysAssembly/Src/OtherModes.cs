@@ -14,7 +14,23 @@ public static class OtherModes
 	public static TwitchPlaysMode currentMode = TwitchPlaysMode.Normal;
 	public static TwitchPlaysMode nextMode = TwitchPlaysMode.Normal;
 
-	public static string GetName(TwitchPlaysMode mode) => Enum.GetName(typeof(TwitchPlaysMode), mode);
+	public static string GetName(TwitchPlaysMode mode) {
+		switch (mode)
+		{
+				case TwitchPlaysMode.Normal:
+					return "通常";
+				case TwitchPlaysMode.Time:
+					return "タイム";
+				case TwitchPlaysMode.VS:
+					return "VS";
+				case TwitchPlaysMode.Zen:
+					return "禅";
+				case TwitchPlaysMode.Training:
+					return "トレーニング";
+				default:
+					return "不明";
+		}
+	}
 
 	public static bool InMode(TwitchPlaysMode mode) => currentMode == mode;
 
@@ -22,8 +38,8 @@ public static class OtherModes
 
 	public enum Team
 	{
-		Good = 1,
-		Evil = -1,
+		Red = 1,
+		White = -1,
 		Undecided = 0
 	}
 
@@ -49,23 +65,23 @@ public static class OtherModes
 	public static bool Unexplodable => ZenModeOn || TrainingModeOn;
 
 	public static float timedMultiplier = 9;
-	public static int goodHealth = 0;
-	public static int evilHealth = 0;
+	public static int RedHealth = 0;
+	public static int WhiteHealth = 0;
 
-	public static int GetGoodHealth() => goodHealth;
+	public static int GetRedHealth() => RedHealth;
 
-	public static int GetEvilHealth() => evilHealth;
+	public static int GetWhiteHealth() => WhiteHealth;
 
-	public static int SubtractEvilHealth(int damage)
+	public static int SubtractWhiteHealth(int damage)
 	{
-		evilHealth -= damage;
-		return evilHealth;
+		WhiteHealth -= damage;
+		return WhiteHealth;
 	}
 
-	public static int SubtractGoodHealth(int damage)
+	public static int SubtractRedHealth(int damage)
 	{
-		goodHealth -= damage;
-		return goodHealth;
+		RedHealth -= damage;
+		return RedHealth;
 	}
 	public static void RefreshModes(KMGameInfo.State state)
 	{
@@ -74,7 +90,7 @@ public static class OtherModes
 		if ((_state != KMGameInfo.State.PostGame && _state != KMGameInfo.State.Setup) || currentMode == nextMode) return;
 
 		currentMode = nextMode;
-		IRCConnection.SendMessageFormat("Mode is now set to: {0}", Enum.GetName(typeof(TwitchPlaysMode), currentMode));
+		IRCConnection.SendMessageFormat("モードが「{0}」に設定されました。", Enum.GetName(typeof(TwitchPlaysMode), currentMode));
 		TwitchGame.RetryAllowed = false;
 	}
 

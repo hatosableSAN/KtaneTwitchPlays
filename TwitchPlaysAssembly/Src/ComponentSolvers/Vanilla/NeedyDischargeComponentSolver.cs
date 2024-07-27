@@ -7,7 +7,9 @@ public class NeedyDischargeComponentSolver : ComponentSolver
 		base(module)
 	{
 		_dischargeButton = ((NeedyDischargeComponent) module.BombComponent).DischargeButton;
-		ModInfo = ComponentSolverFactory.GetModuleInfo("NeedyCapacitor", "!{0} hold 7 [hold the lever for 7 seconds]");
+		ModInfo = ComponentSolverFactory.GetModuleInfo("NeedyCapacitor", "!{0} hold 7 [7秒間長押しする]");	 
+		ModInfo.moduleTranslatedName = "コンデンサー";
+		ModInfo.manualCode = "https://ktane.timwi.de/HTML/Capacitor%20Discharge%20translated%20(%E6%97%A5%E6%9C%AC%E8%AA%9E%20%E2%80%94%20%E3%82%B3%E3%83%B3%E3%83%87%E3%83%B3%E3%82%B5%E3%83%BC).html";
 	}
 
 	protected internal override IEnumerator RespondToCommandInternal(string inputCommand)

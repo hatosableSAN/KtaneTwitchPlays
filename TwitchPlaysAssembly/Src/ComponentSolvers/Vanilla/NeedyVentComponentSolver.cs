@@ -8,7 +8,9 @@ public class NeedyVentComponentSolver : ComponentSolver
 		var ventModule = (NeedyVentComponent) module.BombComponent;
 		_yesButton = ventModule.YesButton;
 		_noButton = ventModule.NoButton;
-		ModInfo = ComponentSolverFactory.GetModuleInfo("NeedyVentGas", "!{0} yes, !{0} y [answer yes] | !{0} no, !{0} n [answer no]");
+		ModInfo = ComponentSolverFactory.GetModuleInfo("NeedyVentGas", "!{0} yes, !{0} y [Yを押す] | !{0} no, !{0} n [Nを押す]");
+		ModInfo.moduleTranslatedName = "ガス放出";
+		ModInfo.manualCode = "https://ktane.timwi.de/HTML/Venting%20Gas%20translated%20(%E6%97%A5%E6%9C%AC%E8%AA%9E%20%E2%80%94%20%E3%82%AC%E3%82%B9%E6%94%BE%E5%87%BA).html";
 	}
 
 	protected internal override IEnumerator RespondToCommandInternal(string inputCommand)

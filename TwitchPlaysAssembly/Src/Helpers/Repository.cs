@@ -13,20 +13,14 @@ public static class Repository
 		if (RawJSON != null)
 			yield break;
 
-		var download = new DownloadText("https://ktane.timwi.de/json/raw");
+		var download = new DownloadText("https://ktane.timwi.de/json/raw");//全部のデータ入っている
 		yield return download;
 
 		RawJSON = download.Text;
 		Modules = JsonConvert.DeserializeObject<WebsiteJSON>(RawJSON).KtaneModules;
 	}
 
-	public static bool IsBossMod(this string moduleID) => Modules.Any(module => module.ModuleID == moduleID && module.BossStatus != null);
-
-	public static bool ModHasQuirk(this string moduleID, string quirk)
-	{
-		var match = Modules?.Find(module => module.ModuleID == moduleID);
-		return (match?.Quirks ?? "").Contains(quirk);
-	}
+	public static bool IsBossMod(this string moduleID) => Modules.Any(module => module.ModuleID == moduleID && module.Ignore != null);
 
 	public static string GetManual(string moduleID)
 	{
@@ -50,8 +44,9 @@ public static class Repository
 		public string FileName;
 		public Dictionary<string, object> TwitchPlays;
 
-		public string BossStatus;
-		public string Quirks;
+		public List<string> Ignore;
+
+		public List<string> Sheets;
 	}
 #pragma warning restore CS0649
 }

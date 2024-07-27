@@ -102,11 +102,11 @@ public class TwitchPlaySettingsData
 	public int TimeModeMinimumTimeGained = 20;
 	public float AwardDropMultiplierOnStrike = 0.80f;
 	public bool TimeModeTimeForActions = true;
-
+    public bool DisableCopyrightChipMusic=true;
 	public bool AutoSetVSModeTeams = false;
 	public bool VSModeBalancedTeams = true;
 	public bool VSModePlayerLockout = true;
-	public int VSModeGoodSplit = 35;
+	public int VSModeRedSplit = 35;
 
 	public bool EnableFactoryTrainingModeCameraWall = true;
 	public bool EnableFactoryAutomaticNextBomb = true;
@@ -485,12 +485,12 @@ public class TwitchPlaySettingsData
 	public string BombDefusedBonusMessage = " {0} reward points to everyone who helped with this success.";
 	public string BombDefusedFooter = " PraiseIt PraiseIt";
 
-	public string VersusGoodHeader = "PraiseIt PraiseIt ";
-	public string VersusEvilHeader = "KAPOW KAPOW ";
+	public string VersusRedHeader = "PraiseIt PraiseIt ";
+	public string VersusWhiteHeader = "KAPOW KAPOW ";
 	public string VersusEndMessage = "The {0} team has won! The bomb had {1} remaining!";
 	public string VersusBonusMessage = " {0} reward points to everyone on the {1} team who helped with this success.";
-	public string VersusGoodFooter = " PraiseIt PraiseIt";
-	public string VersusEvilFooter = " KAPOW KAPOW";
+	public string VersusRedFooter = " PraiseIt PraiseIt";
+	public string VersusWhiteFooter = " KAPOW KAPOW";
 
 	public string BombSoloDefusalMessage = "PraiseIt PraiseIt {0} completed a solo defusal in {1}:{2:00}!";
 	public string BombSoloDefusalNewRecordMessage = " It's a new record! (Previous record: {0}:{1:00})";
@@ -504,7 +504,7 @@ public class TwitchPlaySettingsData
 
 	public string SolverAndSolo = "solver ";
 	public string SoloRankQuery = ", and #{0} solo with a best time of {1}:{2:00.0}";
-	public string RankQuery = "SeemsGood {0} is #{1} {4}with {2} solves and {3} strikes and a total score of {6}{5}";
+	public string RankQuery = "SeemsRed {0} is #{1} {4}with {2} solves and {3} strikes and a total score of {6}{5}";
 
 	public string DoYouEvenPlayBro = "FailFish {0}, do you even play this game?";
 
@@ -567,7 +567,7 @@ public class TwitchPlaySettingsData
 	public string BombTimeStamp = "The Date/Time this bomb started is {0:F}";
 	public string BombDetonateCommand = "panicBasket This bomb's gonna blow!";
 	public string BombStatusTimeMode = "Time remaining: {0} out of {1}, Multiplier: {2:0.0}, Solves: {3}/{4}, Reward: {5}";
-	public string BombStatusVsMode = "Time on clock: {0}, Starting time: {1}, Good HP: {2}, Evil HP: {3}, Reward: {4}";
+	public string BombStatusVsMode = "Time on clock: {0}, Starting time: {1}, Red HP: {2}, White HP: {3}, Reward: {4}";
 	public string BombStatus = "Time remaining: {0} out of {1}, Strikes: {2}/{3}, Solves: {4}/{5}, Reward: {6}";
 
 	public string NotesSpaceFree = "(Free Space)";
@@ -702,12 +702,12 @@ public class TwitchPlaySettingsData
 		valid &= ValidateString(ref BombDefusedBonusMessage, data.BombDefusedBonusMessage, 1);
 		valid &= ValidateString(ref BombDefusedFooter, data.BombDefusedFooter, 0);
 
-		valid &= ValidateString(ref VersusGoodHeader, data.VersusGoodHeader, 0);
-		valid &= ValidateString(ref VersusEvilHeader, data.VersusEvilHeader, 0);
+		valid &= ValidateString(ref VersusRedHeader, data.VersusRedHeader, 0);
+		valid &= ValidateString(ref VersusWhiteHeader, data.VersusWhiteHeader, 0);
 		valid &= ValidateString(ref VersusEndMessage, data.VersusEndMessage, 2);
 		valid &= ValidateString(ref VersusBonusMessage, data.VersusBonusMessage, 2);
-		valid &= ValidateString(ref VersusGoodFooter, data.VersusGoodFooter, 0);
-		valid &= ValidateString(ref VersusEvilFooter, data.VersusEvilFooter, 0);
+		valid &= ValidateString(ref VersusRedFooter, data.VersusRedFooter, 0);
+		valid &= ValidateString(ref VersusWhiteFooter, data.VersusWhiteFooter, 0);
 
 		valid &= ValidateString(ref BombSoloDefusalMessage, data.BombSoloDefusalMessage, 3);
 		valid &= ValidateString(ref BombSoloDefusalNewRecordMessage, data.BombSoloDefusalNewRecordMessage, 2);
@@ -957,16 +957,16 @@ public static class TwitchPlaySettings
 		}
 		else
 		{
-			OtherModes.Team winner = OtherModes.Team.Good;
-			if (OtherModes.GetGoodHealth() == 0)
-				winner = OtherModes.Team.Evil;
-			else if (OtherModes.GetEvilHealth() == 0)
-				winner = OtherModes.Team.Good;
+			OtherModes.Team winner = OtherModes.Team.Red;
+			if (OtherModes.GetRedHealth() == 0)
+				winner = OtherModes.Team.White;
+			else if (OtherModes.GetWhiteHealth() == 0)
+				winner = OtherModes.Team.Red;
 
 			int ClearReward2 =
 				Mathf.CeilToInt(ClearReward / (float) Players.Count(x => Leaderboard.Instance.GetTeam(x) == winner));
 			message = string.Format(data.VersusBonusMessage, ClearReward2,
-				winner == OtherModes.Team.Good ? "good" : "evil");
+				winner == OtherModes.Team.Red ? "Red" : "White");
 
 			foreach (string player in Players.Where(x => Leaderboard.Instance.GetTeam(x) == winner))
 			{

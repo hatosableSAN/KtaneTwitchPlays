@@ -214,27 +214,27 @@ public class Leaderboard
 			CurrentSolvers[name] = 0;
 	}
 
-	public void MakeEvil(string userName) => MakeEvil(userName, SafeGetColor(userName));
+	public void MakeWhite(string userName) => MakeWhite(userName, SafeGetColor(userName));
 
-	public void MakeEvil(string userName, Color userColor)
+	public void MakeWhite(string userName, Color userColor)
 	{
 		LeaderboardEntry entry = GetEntry(userName, userColor);
-		entry.Team = OtherModes.Team.Evil;
+		entry.Team = OtherModes.Team.White;
 		entry.LastAction = DateTime.Now;
 	}
 
-	public void MakeGood(string userName) => MakeGood(userName, SafeGetColor(userName));
+	public void MakeRed(string userName) => MakeRed(userName, SafeGetColor(userName));
 
-	public void MakeGood(string userName, Color userColor)
+	public void MakeRed(string userName, Color userColor)
 	{
 		LeaderboardEntry entry = GetEntry(userName, userColor);
-		entry.Team = OtherModes.Team.Good;
+		entry.Team = OtherModes.Team.Red;
 		entry.LastAction = DateTime.Now;
 	}
 
-	public bool IsAnyEvil() => _entryList.Any(x => x.Active && x.Team == OtherModes.Team.Evil);
+	public bool IsAnyWhite() => _entryList.Any(x => x.Active && x.Team == OtherModes.Team.White);
 
-	public bool IsAnyGood() => _entryList.Any(x => x.Active && x.Team == OtherModes.Team.Good);
+	public bool IsAnyRed() => _entryList.Any(x => x.Active && x.Team == OtherModes.Team.Red);
 
 	public bool IsTeamBalanced(OtherModes.Team team)
 	{
@@ -571,7 +571,7 @@ public class Leaderboard
 	{
 		yield return new WaitUntil(() => IRCConnection.Instance.State == IRCConnectionState.Connected);
 
-		IRCConnection.SendMessage("Warning: Unable to load the leaderboard successfully so the leaderboard will not be saved. Please check the log.");
+		IRCConnection.SendMessage("警告：リーダーボードの読み込みに失敗しましたため、リーダーボードの内容は保存されません。詳細はログを確認してください。");
 	}
 
 	public int Count => _entryList.Count;

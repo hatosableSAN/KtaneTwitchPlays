@@ -26,7 +26,20 @@ public class UrlHelper : MonoBehaviour
 
 	public static string CommandReference => TwitchPlaySettings.data.LogUploaderShortUrls ? "https://tinyurl.com/v3twx5a" : "https://samfundev.github.io/KtaneTwitchPlays";
 
-	public static string ManualFor(string module, string type = "html", bool useVanillaRuleModifier = false) => string.Format(TwitchPlaySettings.data.RepositoryUrl + "{0}/{1}.{2}{3}", type.ToUpper(), NameToUrl(module), type, (useVanillaRuleModifier && type.Equals("html")) ? $"#{VanillaRuleModifier.GetRuleSeed()}" : "");
+	public static string ManualFor(string moduleEN, string moduleJA, string author, string type = "html", bool useVanillaRuleModifier = false) {
+		string[] VanillaJPID = {"ワイヤ", "キーパッド", "ボタン", "コンデンサー", "複雑ワイヤ", "ダイヤル", "迷路", "記憶", "モールス信号", "パスワード", "サイモンゲーム", "表比較", "順番ワイヤ" };
+		string[] VanillaENID= { "Wires", "Keypad", "BigButton", "NeedyCapacitor", "Venn", "NeedyKnob", "Maze", "Memory", "Morse", "Password", "Simon", "WhosOnFirst", "WireSequence" };
+   
+   if(Array.IndexOf(VanillaJPID, moduleEN) != -1) {return string.Format(TwitchPlaySettings.data.RepositoryUrl + "{0}/{1}.{2}{3}", type.ToUpper(), NameToUrl(VanillaENID[Array.IndexOf(VanillaJPID, moduleEN)] + " translated (日本語 — " + moduleJA + ")"), type, (useVanillaRuleModifier && type.Equals("html")) ? $"#{VanillaRuleModifier.GetRuleSeed()}" : "");}
+   else{
+  return string.Format(TwitchPlaySettings.data.RepositoryUrl + "{0}/{1}.{2}{3}", type.ToUpper(), moduleEN!=moduleJA ? NameToUrl(moduleEN + " translated (日本語 — " + moduleJA + ") " + author) : NameToUrl(moduleEN), type, (useVanillaRuleModifier && type.Equals("html")) ? $"#{VanillaRuleModifier.GetRuleSeed()}" : "");
+   }
+  }
+
+	// 例：https://ktane.timwi.de/HTML/Plumbing%20translated%20(日本語%20—%20配管)%20(hatosable).html
+
+	public static string ManualFor(string module) => string.Format(module);
+	// 例：moduleinformation.jsonにあるやつを読む
 
 	public static string MissionLink(string mission) => "https://bombs.samfun.dev/mission/" + TwitchUrlEscape(mission);
 
